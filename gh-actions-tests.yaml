@@ -1,0 +1,80 @@
+name: CI
+
+# Enable Buildkit and let compose use it to speed up image building
+env:
+  DOCKER_BUILDKIT: 1
+  COMPOSE_DOCKER_CLI_BUILD: 1
+
+on:
+  pull_request:
+    branches: [ "master", "main" ]
+    paths-ignore: [ "docs/**" ]
+
+  push:
+    branches: [ "master", "main" ]
+    paths-ignore: [ "docs/**" ]
+
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        python-version: ['3.7', '3.8', '3.9']
+        django-version: ['3.2']
+        drf-version: ['3.11', '3.12']
+        mongoengine-version: ['0.20', '0.21', '0.22', '0.23']
+        django-mongoengine-version: ['0.4']
+        drf-simplejwt-version: ['4.6', '4.7']
+        pyjwt-version: ['1.7', '2.1']
+        exclude:
+          - drf-simplejwt-version: '4.6'
+            pyjwt-version: '2.1'
+          - drf-simplejwt-version: '4.7'
+            pyjwt-version: '1.7'
+
+    steps:
+      - name: Checkout Code Repository
+        uses: actions/checkout@v2
+
+      - name: Setup MongoDB
+        run:  |
+          docker pull mongo
+          docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=SimpleJWT_MongoEngine mongo
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Get pip cache dir
+        id: pip-cache
+        run: |
+          echo "::set-output name=dir::$(pip cache dir)"
+
+      - name: Cache
+        uses: actions/cache@v2
+        with:
+          path: ${{ steps.pip-cache.outputs.dir }}
+          key:
+            ${{ matrix.python-version }}-v1-${{ hashFiles('**/setup.py') }}
+          restore-keys: |
+            ${{ matrix.python-version }}-v1-
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade tox tox-gh-actions
+
+      - name: Tox tests
+        run: |
+          tox -v
+        env:
+          DJANGO: ${{ matrix.django-version }}
+          DRF: ${{ matrix.drf-version }}
+          ME: ${{ matrix.mongoengine-version }}
+          DJME: ${{ matrix.django-mongoengine-version }}
+          DRFSIMPLEJWT: ${{ matrix.drf-simplejwt-version }}
+          PYJWT: ${{ matrix.pyjwt-version }}
