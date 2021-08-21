@@ -1,4 +1,4 @@
-name: CI
+name: Test
 
 # Enable Buildkit and let compose use it to speed up image building
 env:
@@ -69,8 +69,7 @@ jobs:
           python -m pip install --upgrade tox tox-gh-actions
 
       - name: Tox tests
-        run: |
-          tox -v
+        run: tox -v
         env:
           DJANGO: ${{ matrix.django-version }}
           DRF: ${{ matrix.drf-version }}
