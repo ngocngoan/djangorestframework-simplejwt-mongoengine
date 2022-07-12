@@ -45,7 +45,7 @@ jobs:
           docker run -d -p 27017:27017 -e MONGO_INITDB_ROOT_USERNAME=admin -e MONGO_INITDB_ROOT_PASSWORD=SimpleJWT_MongoEngine mongo
 
       - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4.1.0
         with:
           python-version: ${{ matrix.python-version }}
 
