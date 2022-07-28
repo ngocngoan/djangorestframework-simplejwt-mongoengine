@@ -7,7 +7,7 @@ Requirements
 ------------
 
 * Python (3.7, 3.8, 3.9, 3.10)
-* Django (3.2)
+* Django (3.2, 4.0)
 * Django REST Framework (3.11, 3.12)
 * `MongoEngine`_ (0.20, 0.21, 0.22, 0.23)
 * `Django MongoEngine`_ (0.4.6)
