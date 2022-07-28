@@ -22,7 +22,7 @@ jobs:
       fail-fast: false
       max-parallel: 5
       matrix:
-        python-version: ['3.7', '3.8', '3.9']
+        python-version: ['3.7', '3.8', '3.9', '3.10']
         django-version: ['3.2']
         drf-version: ['3.11', '3.12']
         mongoengine-version: ['0.20', '0.21', '0.22', '0.23']
