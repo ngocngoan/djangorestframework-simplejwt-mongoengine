@@ -11,11 +11,11 @@ with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
 requirements = [
-    'django>=3.2,<3.3',
+    'django>=3.2,<4.1',
     'djangorestframework>=3.11.0',
     'djangorestframework-simplejwt>=4.6.0',
     'mongoengine>=0.20.0',
-    'django-mongoengine==0.4.6',
+    'django-mongoengine>=0.4.6',
 ]
 
 test_requirements = ['pytest>=3', ]
@@ -29,6 +29,7 @@ setup(
         'Environment :: Web Environment',
         'Framework :: Django',
         "Framework :: Django :: 3.2",
+        "Framework :: Django :: 4.0",
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU General Public License v3 (GPLv3)',
         'Natural Language :: English',
@@ -37,6 +38,7 @@ setup(
         'Programming Language :: Python :: 3.7',
         'Programming Language :: Python :: 3.8',
         'Programming Language :: Python :: 3.9',
+        'Programming Language :: Python :: 3.10',
         'Topic :: Internet :: WWW/HTTP',
     ],
     description="Simple JWT is a JSON Web Token authentication plugin for the Django REST Framework which to be compatible with MongoEngine.",

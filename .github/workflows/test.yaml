@@ -25,7 +25,7 @@ jobs:
         python-version: ['3.7', '3.8', '3.9', '3.10']
         django-version: ['3.2', '4.0']
         drf-version: ['3.11', '3.12', '3.13']
-        mongoengine-version: ['0.20', '0.21', '0.22', '0.23']
+        mongoengine-version: ['0.20', '0.21', '0.22', '0.23', '0.24']
         django-mongoengine-version: ['0.4']
         drf-simplejwt-version: ['4.6', '4.7']
         pyjwt-version: ['1.7', '2.1']
