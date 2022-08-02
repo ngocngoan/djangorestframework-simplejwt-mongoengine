@@ -1,5 +1,6 @@
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
+from rest_framework.exceptions import ValidationError
 from rest_framework_simplejwt.serializers import (
     TokenObtainSerializer as SimpleJWTTokenObtainSerializer,
 )
@@ -8,10 +9,14 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework_simplejwt.serializers import (
     TokenRefreshSlidingSerializer as SimpleJWTTokenRefreshSlidingSerializer,
+    TokenVerifySerializer as SimpleJWTTokenVerifySerializer
 )
 
 from .settings import api_settings
-from .tokens import RefreshToken, SlidingToken
+from .tokens import RefreshToken, SlidingToken, UntypedToken
+
+if api_settings.BLACKLIST_AFTER_ROTATION:
+    from .token_blacklist.models import BlacklistedToken, OutstandingToken
 
 
 class TokenObtainSerializer(SimpleJWTTokenObtainSerializer):
@@ -93,3 +98,15 @@ class TokenRefreshSlidingSerializer(SimpleJWTTokenRefreshSlidingSerializer):
         token.set_exp()
 
         return {"token": str(token)}
+
+
+class TokenVerifySerializer(SimpleJWTTokenVerifySerializer):
+    def validate(self, attrs):
+        token = UntypedToken(attrs['token'])
+
+        if api_settings.BLACKLIST_AFTER_ROTATION:
+            jti = token.get(api_settings.JTI_CLAIM)
+            if BlacklistedToken.objects.filter(token__in=OutstandingToken.objects.filter(jti=jti)).exists():
+                raise ValidationError("Token is blacklisted")
+
+        return {}

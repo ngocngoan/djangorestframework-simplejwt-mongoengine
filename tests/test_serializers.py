@@ -4,7 +4,6 @@ from unittest.mock import MagicMock, patch
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework import exceptions as drf_exceptions
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.serializers import TokenVerifySerializer
 from rest_framework_simplejwt.utils import (
     aware_utcnow,
     datetime_from_epoch,
@@ -17,6 +16,7 @@ from rest_framework_simplejwt_mongoengine.serializers import (
     TokenObtainSlidingSerializer,
     TokenRefreshSerializer,
     TokenRefreshSlidingSerializer,
+    TokenVerifySerializer
 )
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.token_blacklist.models import (
