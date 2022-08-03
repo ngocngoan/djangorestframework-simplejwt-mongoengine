@@ -2,13 +2,8 @@
 
 """The setup script."""
 
+from pathlib import Path
 from setuptools import setup, find_packages
-
-with open('README.rst') as readme_file:
-    readme = readme_file.read()
-
-with open('HISTORY.rst') as history_file:
-    history = history_file.read()
 
 requirements = [
     'django>=3.2,<4.1',
@@ -41,8 +36,7 @@ setup(
         'Topic :: Internet :: WWW/HTTP',
     ],
     description="Simple JWT is a JSON Web Token authentication plugin for the Django REST Framework which to be compatible with MongoEngine.",
-    long_description=readme,
-    long_description_content_type="text/x-rst",
+    long_description=Path('README.rst').read_text(encoding='utf-8'),
     install_requires=requirements,
     license="GNU General Public License v3",
     include_package_data=True,
