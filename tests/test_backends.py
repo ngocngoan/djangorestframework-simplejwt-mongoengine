@@ -4,11 +4,11 @@ from unittest.mock import patch
 
 import jwt
 from jwt import PyJWS, algorithms
-from pkg_resources import get_distribution
 from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.exceptions import TokenBackendError
 from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch, make_utc
 
+from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
 from tests.keys import PRIVATE_KEY, PRIVATE_KEY_2, PUBLIC_KEY, PUBLIC_KEY_2
 
 from .utils import BaseTestCase
@@ -25,14 +25,11 @@ LEEWAY = 100
 
 
 class TestTokenBackend(BaseTestCase):
-    drf_simplejwt_version = get_distribution(
-            "djangorestframework_simplejwt"
-        ).version
 
     def setUp(self):
         self.hmac_token_backend = TokenBackend("HS256", SECRET)
 
-        if self.drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+        if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
             self.hmac_leeway_token_backend = TokenBackend(
                 "HS256", SECRET, leeway=LEEWAY
             )

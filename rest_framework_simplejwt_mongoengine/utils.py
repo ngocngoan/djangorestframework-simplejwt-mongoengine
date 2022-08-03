@@ -1,4 +1,8 @@
 import math
+from pkg_resources import get_distribution
+
+
+drf_simplejwt_version = get_distribution("djangorestframework_simplejwt").version
 
 
 def microseconds_to_milliseconds(date_time):
