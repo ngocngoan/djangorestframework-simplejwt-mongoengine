@@ -1,73 +1,46 @@
 from datetime import datetime, timedelta
+from unittest import mock
 from unittest.mock import patch
 
 import jwt
 from jwt import PyJWS, algorithms
+from pkg_resources import get_distribution
 from rest_framework_simplejwt.backends import TokenBackend
 from rest_framework_simplejwt.exceptions import TokenBackendError
-from rest_framework_simplejwt.utils import (
-    aware_utcnow,
-    datetime_from_epoch,
-    datetime_to_epoch,
-    make_utc,
-)
+from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch, make_utc
+
+from tests.keys import PRIVATE_KEY, PRIVATE_KEY_2, PUBLIC_KEY, PUBLIC_KEY_2
 
 from .utils import BaseTestCase
 
 SECRET = "not_secret"
 
-PRIVATE_KEY = """
------BEGIN RSA PRIVATE KEY-----
-MIIEowIBAAKCAQEA3xMJfyl8TOdrsjDLSIodsArJ/NnQB3ZdfbFC5onxATDfRLLA
-CHFo3ye694doBKeSe1NFYbfXPvahl6ODX1a23oQyoRQwlL+M99cLcdCa0gGuJXdb
-AaF6Em8E+7uSb3290mI+rZmjqyc7gMtKVWKL4e5i2PerFFBoYkZ7E90KOp2t0ZAD
-x2uqF4VTOfYLHG0cPgSw9/ptDStJqJVAOiRRqbv0j0GOFMDYNcN0mDlnpryhQFbQ
-iMqn4IJIURZUVBJujFSa45cJPvSmMb6NrzZ1crg5UN6/5Mu2mxQzAi21+vpgGL+E
-EuekUd7sRgEAjTHjLKzotLAGo7EGa8sL1vMSFwIDAQABAoIBAQCGGWabF/BONswq
-CWUazVR9cG7uXm3NHp2jIr1p40CLC7scDCyeprZ5d+PQS4j/S1Ema++Ih8CQbCjG
-BJjD5lf2OhhJdt6hfOkcUBzkJZf8aOAsS6zctRqyHCUtwxuLhFZpM4AkUfjuuZ3u
-lcawv5YBkpG/hltE0fV+Jop0bWtpwiKxVsHXVcS0WEPXic0lsOTBCw8m81JXqjir
-PCBOnkxgNpHSt69S1xnW3l9fPUWVlduO3EIZ5PZG2BxU081eZW31yIlKsDJhfgm6
-R5Vlr5DynqeojAd6SNliCzNXZP28GOpQBrYIeVQWA1yMANvkvd4apz9GmDrjF/Fd
-g8Chah+5AoGBAPc/+zyuDZKVHK7MxwLPlchCm5Zb4eou4ycbwEB+P3gDS7MODGu4
-qvx7cstTZMuMavNRcJsfoiMMrke9JrqGe4rFGiKRFLVBY2Xwr+95pKNC11EWI1lF
-5qDAmreDsj2alVJT5yZ9hsAWTsk2i+xj+/XHWYVkr67pRvOPRAmGMB+NAoGBAOb4
-CBHe184Hn6Ie+gSD4OjewyUVmr3JDJ41s8cjb1kBvDJ/wv9Rvo9yz2imMr2F0YGc
-ytHraM77v8KOJuJWpvGjEg8I0a/rSttxWQ+J0oYJSIPn+eDpAijNWfOp1aKRNALT
-pboCXcnSn+djJFKkNJ2hR7R/vrrM6Jyly1jcVS0zAoGAQpdt4Cr0pt0YS5AFraEh
-Mz2VUArRLtSQA3F69yPJjlY85i3LdJvZGYVaJp8AT74y8/OkQ3NipNP+gH3WV3hu
-/7IUVukCTcsdrVAE4pe9mucevM0cmie0dOlLAlArCmJ/Axxr7jbyuvuHHrRdPT60
-lr6pQr8afh6AKIsWhQYqIeUCgYA+v9IJcN52hhGzjPDl+yJGggbIc3cn6pA4B2UB
-TDo7F0KXAajrjrzT4iBBUS3l2Y5SxVNA9tDxsumlJNOhmGMgsOn+FapKPgWHWuMU
-WqBMdAc0dvinRwakKS4wCcsVsJdN0UxsHap3Y3a3+XJr1VrKHIALpM0fmP31WQHG
-8Y1eiwKBgF6AYXxo0FzZacAommZrAYoxFZT1u4/rE/uvJ2K9HYRxLOVKZe+89ki3
-D7AOmrxe/CAc/D+nNrtUIv3RFGfadfSBWzyLw36ekW76xPdJgqJsSz5XJ/FgzDW+
-WNC5oOtiPOMCymP75oKOjuZJZ2SPLRmiuO/qvI5uAzBHxRC1BKdt
------END RSA PRIVATE KEY-----
-"""
-
-PUBLIC_KEY = """
------BEGIN PUBLIC KEY-----
-MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEA3xMJfyl8TOdrsjDLSIod
-sArJ/NnQB3ZdfbFC5onxATDfRLLACHFo3ye694doBKeSe1NFYbfXPvahl6ODX1a2
-3oQyoRQwlL+M99cLcdCa0gGuJXdbAaF6Em8E+7uSb3290mI+rZmjqyc7gMtKVWKL
-4e5i2PerFFBoYkZ7E90KOp2t0ZADx2uqF4VTOfYLHG0cPgSw9/ptDStJqJVAOiRR
-qbv0j0GOFMDYNcN0mDlnpryhQFbQiMqn4IJIURZUVBJujFSa45cJPvSmMb6NrzZ1
-crg5UN6/5Mu2mxQzAi21+vpgGL+EEuekUd7sRgEAjTHjLKzotLAGo7EGa8sL1vMS
-FwIDAQAB
------END PUBLIC KEY-----
-"""
-
 AUDIENCE = "openid-client-id"
 
 ISSUER = "https://www.myoidcprovider.com"
 
+JWK_URL = "https://randomstring.auth0.com/.well-known/jwks.json"
+
+LEEWAY = 100
+
 
 class TestTokenBackend(BaseTestCase):
+    drf_simplejwt_version = get_distribution(
+            "djangorestframework_simplejwt"
+        ).version
+
     def setUp(self):
         self.hmac_token_backend = TokenBackend("HS256", SECRET)
+
+        if self.drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+            self.hmac_leeway_token_backend = TokenBackend(
+                "HS256", SECRET, leeway=LEEWAY
+            )
+
         self.rsa_token_backend = TokenBackend("RS256", PRIVATE_KEY, PUBLIC_KEY)
-        self.aud_iss_token_backend = TokenBackend("RS256", PRIVATE_KEY, PUBLIC_KEY, AUDIENCE, ISSUER)
+        self.aud_iss_token_backend = TokenBackend(
+            "RS256", PRIVATE_KEY, PUBLIC_KEY, AUDIENCE, ISSUER
+        )
         self.payload = {"foo": "bar"}
 
     def test_init(self):
@@ -79,11 +52,17 @@ class TestTokenBackend(BaseTestCase):
 
     @patch.object(algorithms, "has_crypto", new=False)
     def test_init_fails_for_rs_algorithms_when_crypto_not_installed(self):
-        with self.assertRaisesRegex(TokenBackendError, "You must have cryptography installed to use RS256."):
+        with self.assertRaisesRegex(
+            TokenBackendError, "You must have cryptography installed to use RS256."
+        ):
             TokenBackend("RS256", "not_secret")
-        with self.assertRaisesRegex(TokenBackendError, "You must have cryptography installed to use RS384."):
+        with self.assertRaisesRegex(
+            TokenBackendError, "You must have cryptography installed to use RS384."
+        ):
             TokenBackend("RS384", "not_secret")
-        with self.assertRaisesRegex(TokenBackendError, "You must have cryptography installed to use RS512."):
+        with self.assertRaisesRegex(
+            TokenBackendError, "You must have cryptography installed to use RS512."
+        ):
             TokenBackend("RS512", "not_secret")
 
     def test_encode_hmac(self):
@@ -172,12 +151,6 @@ class TestTokenBackend(BaseTestCase):
         self.payload["foo"] = "baz"
         token_2 = jwt.encode(self.payload, SECRET, algorithm="HS256")
 
-        if isinstance(token_1, bytes):
-            token_1 = token_1.decode()
-
-        if isinstance(token_2, bytes):
-            token_2 = token_2.decode()
-
         token_2_payload = token_2.rsplit(".", 1)[0]
         token_1_sig = token_1.rsplit(".", 1)[-1]
         invalid_token = token_2_payload + "." + token_1_sig
@@ -190,16 +163,8 @@ class TestTokenBackend(BaseTestCase):
         token_1 = jwt.encode(self.payload, SECRET, algorithm="HS256")
         self.payload["foo"] = "baz"
         token_2 = jwt.encode(self.payload, SECRET, algorithm="HS256")
-
-        if isinstance(token_1, bytes):
-            token_1 = token_1.decode()
-
-        if isinstance(token_2, bytes):
-            token_2 = token_2.decode()
-
         # Payload copied
-        if not isinstance(self.payload["exp"], int):
-            self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
+        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
         token_2_payload = token_2.rsplit(".", 1)[0]
         token_1_sig = token_1.rsplit(".", 1)[-1]
@@ -216,8 +181,7 @@ class TestTokenBackend(BaseTestCase):
 
         token = jwt.encode(self.payload, SECRET, algorithm="HS256")
         # Payload copied
-        if not isinstance(self.payload["exp"], int):
-            self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
+        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
         self.assertEqual(self.hmac_token_backend.decode(token), self.payload)
 
@@ -248,12 +212,6 @@ class TestTokenBackend(BaseTestCase):
         self.payload["foo"] = "baz"
         token_2 = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
 
-        if isinstance(token_1, bytes):
-            token_1 = token_1.decode()
-
-        if isinstance(token_2, bytes):
-            token_2 = token_2.decode()
-
         token_2_payload = token_2.rsplit(".", 1)[0]
         token_1_sig = token_1.rsplit(".", 1)[-1]
         invalid_token = token_2_payload + "." + token_1_sig
@@ -267,18 +225,11 @@ class TestTokenBackend(BaseTestCase):
         self.payload["foo"] = "baz"
         token_2 = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
 
-        if isinstance(token_1, bytes):
-            token_1 = token_1.decode()
-
-        if isinstance(token_2, bytes):
-            token_2 = token_2.decode()
-
         token_2_payload = token_2.rsplit(".", 1)[0]
         token_1_sig = token_1.rsplit(".", 1)[-1]
         invalid_token = token_2_payload + "." + token_1_sig
         # Payload copied
-        if not isinstance(self.payload["exp"], int):
-            self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
+        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
         self.assertEqual(
             self.hmac_token_backend.decode(invalid_token, verify=False),
@@ -291,8 +242,7 @@ class TestTokenBackend(BaseTestCase):
 
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
         # Payload copied
-        if not isinstance(self.payload["exp"], int):
-            self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
+        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
         self.assertEqual(self.rsa_token_backend.decode(token), self.payload)
 
@@ -304,10 +254,41 @@ class TestTokenBackend(BaseTestCase):
 
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
         # Payload copied
-        if not isinstance(self.payload["exp"], int):
-            self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
+        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
         self.assertEqual(self.aud_iss_token_backend.decode(token), self.payload)
+
+    if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+        def test_decode_rsa_aud_iss_jwk_success(self):
+            self.payload["exp"] = aware_utcnow() + timedelta(days=1)
+            self.payload["foo"] = "baz"
+            self.payload["aud"] = AUDIENCE
+            self.payload["iss"] = ISSUER
+
+            token = jwt.encode(
+                self.payload,
+                PRIVATE_KEY_2,
+                algorithm="RS256",
+                headers={"kid": "230498151c214b788dd97f22b85410a5"},
+            )
+            # Payload copied
+            self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
+
+            mock_jwk_module = mock.MagicMock()
+            with patch("rest_framework_simplejwt.backends.PyJWKClient") as mock_jwk_module:
+                mock_jwk_client = mock.MagicMock()
+                mock_signing_key = mock.MagicMock()
+
+                mock_jwk_module.return_value = mock_jwk_client
+                mock_jwk_client.get_signing_key_from_jwt.return_value = mock_signing_key
+                type(mock_signing_key).key = mock.PropertyMock(return_value=PUBLIC_KEY_2)
+
+                # Note the PRIV,PUB care is intentially the original pairing
+                jwk_token_backend = TokenBackend(
+                    "RS256", PRIVATE_KEY, PUBLIC_KEY, AUDIENCE, ISSUER, JWK_URL
+                )
+
+                self.assertEqual(jwk_token_backend.decode(token), self.payload)
 
     def test_decode_when_algorithm_not_available(self):
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
@@ -315,7 +296,9 @@ class TestTokenBackend(BaseTestCase):
         pyjwt_without_rsa = PyJWS()
         pyjwt_without_rsa.unregister_algorithm("RS256")
         with patch.object(jwt, "decode", new=pyjwt_without_rsa.decode):
-            with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
+            with self.assertRaisesRegex(
+                TokenBackendError, "Invalid algorithm specified"
+            ):
                 self.rsa_token_backend.decode(token)
 
     def test_decode_when_token_algorithm_does_not_match(self):
@@ -323,3 +306,26 @@ class TestTokenBackend(BaseTestCase):
 
         with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
             self.hmac_token_backend.decode(token)
+
+    if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+        def test_decode_leeway_hmac_fail(self):
+            self.payload["exp"] = datetime_to_epoch(
+                aware_utcnow() - timedelta(seconds=LEEWAY * 2)
+            )
+
+            expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
+
+            with self.assertRaises(TokenBackendError):
+                self.hmac_leeway_token_backend.decode(expired_token)
+
+        def test_decode_leeway_hmac_success(self):
+            self.payload["exp"] = datetime_to_epoch(
+                aware_utcnow() - timedelta(seconds=LEEWAY / 2)
+            )
+
+            expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
+
+            self.assertEqual(
+                self.hmac_leeway_token_backend.decode(expired_token),
+                self.payload,
+            )
