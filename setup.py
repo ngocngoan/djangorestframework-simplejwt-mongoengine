@@ -7,10 +7,10 @@ from setuptools import setup, find_packages
 
 requirements = [
     'django>=3.2,<4.1',
-    'djangorestframework>=3.11.0',
-    'djangorestframework-simplejwt>=4.6.0',
+    'djangorestframework>=3.11',
+    'djangorestframework-simplejwt>=4.7,<5.0',
     'mongoengine>=0.20.0',
-    'django-mongoengine>=0.4.6',
+    'django-mongoengine>=0.5',
 ]
 
 test_requirements = ['pytest>=3', ]
@@ -18,7 +18,7 @@ test_requirements = ['pytest>=3', ]
 setup(
     author="Đỗ Ngọc Ngoạn (aka Ngoan Do)",
     author_email='ngocngoan060288@gmail.com',
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
