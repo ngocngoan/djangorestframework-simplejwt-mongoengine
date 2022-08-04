@@ -18,7 +18,7 @@ test_requirements = ['pytest>=3', ]
 setup(
     author="Đỗ Ngọc Ngoạn (aka Ngoan Do)",
     author_email='ngocngoan060288@gmail.com',
-    python_requires='>=3.9',
+    python_requires='>=3.8',
     classifiers=[
         'Development Status :: 5 - Production/Stable',
         'Environment :: Web Environment',
