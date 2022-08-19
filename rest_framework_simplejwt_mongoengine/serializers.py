@@ -14,6 +14,7 @@ from rest_framework_simplejwt.serializers import (
 
 from .settings import api_settings
 from .tokens import RefreshToken, SlidingToken, UntypedToken
+from .utils import drf_simplejwt_version
 
 if api_settings.BLACKLIST_AFTER_ROTATION:
     from .token_blacklist.models import BlacklistedToken, OutstandingToken
@@ -110,3 +111,16 @@ class TokenVerifySerializer(SimpleJWTTokenVerifySerializer):
                 raise ValidationError("Token is blacklisted")
 
         return {}
+
+
+if drf_simplejwt_version in ["5.0.0"]:
+    from rest_framework_simplejwt.serializers import TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer
+
+    class TokenBlacklistSerializer(SimpleJWTTokenBlacklistSerializer):
+        def validate(self, attrs):
+            refresh = RefreshToken(attrs['refresh'])
+            try:
+                refresh.blacklist()
+            except AttributeError:
+                pass
+            return {}
