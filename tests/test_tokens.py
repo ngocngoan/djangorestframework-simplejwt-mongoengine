@@ -62,9 +62,10 @@ class TestToken(BaseTestCase):
         self.assertEqual(t.current_time, now)
         self.assertIsNone(t.token)
 
-        self.assertEqual(len(t.payload), 3)
+        self.assertEqual(len(t.payload), 4)
         self.assertEqual(t.payload["exp"], datetime_to_epoch(now + MyToken.lifetime))
-        self.assertIn("jti", t.payload)
+        self.assertEqual(t.payload['iat'], datetime_to_epoch(now))
+        self.assertIn('jti', t.payload)
         self.assertEqual(t.payload[api_settings.TOKEN_TYPE_CLAIM], MyToken.token_type)
 
     def test_init_token_given(self):
@@ -90,9 +91,10 @@ class TestToken(BaseTestCase):
         self.assertEqual(t.current_time, now)
         self.assertEqual(t.token, encoded_good_token)
 
-        self.assertEqual(len(t.payload), 4)
+        self.assertEqual(len(t.payload), 5)
         self.assertEqual(t["some_value"], "arst")
         self.assertEqual(t["exp"], datetime_to_epoch(original_now + MyToken.lifetime))
+        self.assertEqual(t['iat'], datetime_to_epoch(original_now))
         self.assertEqual(t[api_settings.TOKEN_TYPE_CLAIM], MyToken.token_type)
         self.assertIn("jti", t.payload)
 
@@ -171,6 +173,7 @@ class TestToken(BaseTestCase):
         # content.
         del token[api_settings.TOKEN_TYPE_CLAIM]
         del token["jti"]
+        del token['iat']
 
         # Should encode the given token
         encoded_token = str(token)
@@ -179,9 +182,8 @@ class TestToken(BaseTestCase):
         self.assertIn(
             encoded_token,
             (
-                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk0NjY4NDgwMH0.VKoOnMgmETawjDZwxrQaHG0xHdo6xBodFy6FXJzTVxs",
-                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk0NjY4NDgwMH0.ewpl2ydyK5InOsTk-s6dLADpjfkniifnyGOP2I8teQA",
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk0NjY4NDgwMH0.iqxxOHV63sjeqNR1GDxX3LPvMymfVB76sOIDqTbjAgk",
+                'eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk0NjY4NDgwMH0.VKoOnMgmETawjDZwxrQaHG0xHdo6xBodFy6FXJzTVxs',
+                'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk0NjY4NDgwMH0.iqxxOHV63sjeqNR1GDxX3LPvMymfVB76sOIDqTbjAgk',
             ),
         )
 
@@ -238,6 +240,21 @@ class TestToken(BaseTestCase):
         token.set_exp(claim="refresh_exp", from_time=now, lifetime=timedelta(days=1))
         self.assertIn("refresh_exp", token)
         self.assertEqual(token["refresh_exp"], datetime_to_epoch(now + timedelta(days=1)))
+
+    def test_set_iat(self):
+        now = make_utc(datetime(year=2000, month=1, day=1))
+
+        token = MyToken()
+        token.current_time = now
+
+        # By default, should add 'iat' claim to token using `self.current_time`
+        token.set_iat()
+        self.assertEqual(token['iat'], datetime_to_epoch(now))
+
+        # Should allow overriding of time and claim name
+        token.set_iat(claim='refresh_iat', at_time=now + timedelta(days=1))
+        self.assertIn('refresh_iat', token)
+        self.assertEqual(token['refresh_iat'], datetime_to_epoch(now + timedelta(days=1)))
 
     def test_check_exp(self):
         token = MyToken()
