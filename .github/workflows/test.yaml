@@ -24,9 +24,9 @@ jobs:
       matrix:
         python-version: ['3.8', '3.9', '3.10']
         django-version: ['3.2', '4.0']
-        drf-version: ['3.11', '3.12', '3.13']
+        drf-version: ['3.11', '3.12', '3.13', '3.14']
         # mongoengine-version: ['0.22', '0.23', '0.24']
-        django-mongoengine-version: ['0.5']
+        django-mongoengine-version: ['0.5.4']
         drf-simplejwt-version: ['4.7', '4.8', '5.0']
 
     steps:
