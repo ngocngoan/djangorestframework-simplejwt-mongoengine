@@ -25,12 +25,15 @@ if api_settings.BLACKLIST_AFTER_ROTATION:
 
 class TokenObtainSerializer(SimpleJWTTokenObtainSerializer):
     username_field = get_user_document().USERNAME_FIELD
+    token_class = None
+
+    @classmethod
+    def get_token(cls, user):
+        return cls.token_class.for_user(user)
 
 
 class TokenObtainPairSerializer(TokenObtainSerializer):
-    @classmethod
-    def get_token(cls, user):
-        return RefreshToken.for_user(user)
+    token_class = RefreshToken
 
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -48,9 +51,7 @@ class TokenObtainPairSerializer(TokenObtainSerializer):
 
 
 class TokenObtainSlidingSerializer(TokenObtainSerializer):
-    @classmethod
-    def get_token(cls, user):
-        return SlidingToken.for_user(user)
+    token_class = SlidingToken
 
     def validate(self, attrs):
         data = super().validate(attrs)
@@ -67,8 +68,10 @@ class TokenObtainSlidingSerializer(TokenObtainSerializer):
 
 
 class TokenRefreshSerializer(SimpleJWTTokenRefreshSerializer):
+    token_class = RefreshToken
+
     def validate(self, attrs):
-        refresh = RefreshToken(attrs["refresh"])
+        refresh = self.token_class(attrs["refresh"])
 
         data = {"access": str(refresh.access_token)}
 
@@ -91,8 +94,10 @@ class TokenRefreshSerializer(SimpleJWTTokenRefreshSerializer):
 
 
 class TokenRefreshSlidingSerializer(SimpleJWTTokenRefreshSlidingSerializer):
+    token_class = SlidingToken
+
     def validate(self, attrs):
-        token = SlidingToken(attrs["token"])
+        token = self.token_class(attrs["token"])
 
         # Check that the timestamp in the "refresh_exp" claim has not
         # passed
@@ -128,8 +133,10 @@ if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
     )
 
     class TokenBlacklistSerializer(SimpleJWTTokenBlacklistSerializer):
+        token_class = RefreshToken
+
         def validate(self, attrs):
-            refresh = RefreshToken(attrs["refresh"])
+            refresh = self.token_class(attrs["refresh"])
             try:
                 refresh.blacklist()
             except AttributeError:
