@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework.exceptions import ValidationError
@@ -9,7 +10,9 @@ from rest_framework_simplejwt.serializers import (
 )
 from rest_framework_simplejwt.serializers import (
     TokenRefreshSlidingSerializer as SimpleJWTTokenRefreshSlidingSerializer,
-    TokenVerifySerializer as SimpleJWTTokenVerifySerializer
+)
+from rest_framework_simplejwt.serializers import (
+    TokenVerifySerializer as SimpleJWTTokenVerifySerializer,
 )
 
 from .settings import api_settings
@@ -103,22 +106,30 @@ class TokenRefreshSlidingSerializer(SimpleJWTTokenRefreshSlidingSerializer):
 
 class TokenVerifySerializer(SimpleJWTTokenVerifySerializer):
     def validate(self, attrs):
-        token = UntypedToken(attrs['token'])
+        token = UntypedToken(attrs["token"])
 
-        if api_settings.BLACKLIST_AFTER_ROTATION:
+        if (
+            api_settings.BLACKLIST_AFTER_ROTATION
+            and "rest_framework_simplejwt_mongoengine.token_blacklist"
+            in settings.INSTALLED_APPS
+        ):
             jti = token.get(api_settings.JTI_CLAIM)
-            if BlacklistedToken.objects.filter(token__in=OutstandingToken.objects.filter(jti=jti)).exists():
+            if BlacklistedToken.objects.filter(
+                token__in=OutstandingToken.objects.filter(jti=jti)
+            ).exists():
                 raise ValidationError("Token is blacklisted")
 
         return {}
 
 
 if drf_simplejwt_version in ["5.0.0"]:
-    from rest_framework_simplejwt.serializers import TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer
+    from rest_framework_simplejwt.serializers import (
+        TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer,
+    )
 
     class TokenBlacklistSerializer(SimpleJWTTokenBlacklistSerializer):
         def validate(self, attrs):
-            refresh = RefreshToken(attrs['refresh'])
+            refresh = RefreshToken(attrs["refresh"])
             try:
                 refresh.blacklist()
             except AttributeError:
