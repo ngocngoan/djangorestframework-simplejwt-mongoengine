@@ -122,7 +122,7 @@ class TokenVerifySerializer(SimpleJWTTokenVerifySerializer):
         return {}
 
 
-if drf_simplejwt_version in ["5.0.0"]:
+if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
     from rest_framework_simplejwt.serializers import (
         TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer,
     )

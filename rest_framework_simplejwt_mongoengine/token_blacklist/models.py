@@ -1,10 +1,9 @@
 from django.conf import settings
 from django.utils import timezone
-from mongoengine import CASCADE, fields
 from django_mongoengine import document
 from django_mongoengine.mongo_auth.managers import get_user_document
 from django_mongoengine.queryset import QuerySetManager
-
+from mongoengine import fields, queryset
 
 User = get_user_document()
 
@@ -14,7 +13,7 @@ class OutstandingTokenManager(QuerySetManager):
 
 
 class OutstandingToken(document.Document):
-    user = fields.ReferenceField(User, reverse_delete_rule=CASCADE, null=True)
+    user = fields.ReferenceField(User, reverse_delete_rule=queryset.NULLIFY, null=True)
 
     jti = fields.StringField(unique=True, max_length=255)
     token = fields.StringField()
@@ -30,11 +29,14 @@ class OutstandingToken(document.Document):
         #
         # Also see corresponding ticket:
         # https://github.com/encode/django-rest-framework/issues/705
-        abstract = 'rest_framework_simplejwt_mongoengine.token_blacklist' not in settings.INSTALLED_APPS
-        ordering = ('user',)
+        abstract = (
+            "rest_framework_simplejwt_mongoengine.token_blacklist"
+            not in settings.INSTALLED_APPS
+        )
+        ordering = ("user",)
 
     def __str__(self):
-        return 'Token for {} ({})'.format(
+        return "Token for {} ({})".format(
             self.user,
             self.jti,
         )
@@ -45,7 +47,9 @@ class BlacklistedTokenManager(QuerySetManager):
 
 
 class BlacklistedToken(document.Document):
-    token = fields.ReferenceField(OutstandingToken, reverse_delete_rule=CASCADE)
+    token = fields.ReferenceField(
+        OutstandingToken, reverse_delete_rule=queryset.CASCADE
+    )
 
     blacklisted_at = fields.DateTimeField(default=timezone.now)
 
@@ -57,7 +61,10 @@ class BlacklistedToken(document.Document):
         #
         # Also see corresponding ticket:
         # https://github.com/encode/django-rest-framework/issues/705
-        abstract = 'rest_framework_simplejwt_mongoengine.token_blacklist' not in settings.INSTALLED_APPS
+        abstract = (
+            "rest_framework_simplejwt_mongoengine.token_blacklist"
+            not in settings.INSTALLED_APPS
+        )
 
     def __str__(self):
-        return 'Blacklisted token for {}'.format(self.token.user)
+        return f"Blacklisted token for {self.token.user}"

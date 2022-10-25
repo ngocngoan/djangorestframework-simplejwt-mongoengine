@@ -4,8 +4,6 @@ from unittest.mock import patch
 
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
-
-# from rest_framework_simplejwt import serializers
 from rest_framework_simplejwt.utils import (
     aware_utcnow,
     datetime_from_epoch,
@@ -140,7 +138,9 @@ class TestTokenRefreshView(APIViewTestCase):
         # View returns 200
         now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+        with patch(
+            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+        ) as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
 
             res = self.view_post(data={"refresh": str(refresh)})
@@ -150,7 +150,9 @@ class TestTokenRefreshView(APIViewTestCase):
         access = AccessToken(res.data["access"])
 
         self.assertEqual(refresh["test_claim"], access["test_claim"])
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
 
 
 class TestTokenObtainSlidingView(APIViewTestCase):
@@ -270,7 +272,9 @@ class TestTokenRefreshSlidingView(APIViewTestCase):
 
     def test_it_should_return_401_if_token_has_refresh_period_expired(self):
         token = SlidingToken()
-        token.set_exp(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(seconds=1))
+        token.set_exp(
+            api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(seconds=1)
+        )
 
         res = self.view_post(data={"token": str(token)})
         self.assertEqual(res.status_code, 401)
@@ -281,7 +285,10 @@ class TestTokenRefreshSlidingView(APIViewTestCase):
 
         token = SlidingToken()
         exp = now + api_settings.SLIDING_TOKEN_LIFETIME - timedelta(seconds=1)
-        token.set_exp(from_time=now, lifetime=api_settings.SLIDING_TOKEN_LIFETIME - timedelta(seconds=1))
+        token.set_exp(
+            from_time=now,
+            lifetime=api_settings.SLIDING_TOKEN_LIFETIME - timedelta(seconds=1),
+        )
 
         # View returns 200
         res = self.view_post(data={"token": str(token)})
@@ -341,13 +348,14 @@ class TestTokenVerifyView(APIViewTestCase):
         self.assertEqual(len(res.data), 0)
 
 
-if drf_simplejwt_version in ["5.0.0"]:
+if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
+
     class TestTokenBlacklistView(APIViewTestCase):
-        view_name = 'token_blacklist'
+        view_name = "token_blacklist"
 
         def setUp(self):
-            self.username = 'test_user'
-            self.password = 'test_password'
+            self.username = "test_user"
+            self.password = "test_password"
 
             self.user = User.create_user(
                 username=self.username,
@@ -357,33 +365,35 @@ if drf_simplejwt_version in ["5.0.0"]:
         def test_fields_missing(self):
             res = self.view_post(data={})
             self.assertEqual(res.status_code, 400)
-            self.assertIn('refresh', res.data)
+            self.assertIn("refresh", res.data)
 
         def test_it_should_return_401_if_token_invalid(self):
             token = RefreshToken()
-            del token['exp']
+            del token["exp"]
 
-            res = self.view_post(data={'refresh': str(token)})
+            res = self.view_post(data={"refresh": str(token)})
             self.assertEqual(res.status_code, 401)
-            self.assertEqual(res.data['code'], 'token_not_valid')
+            self.assertEqual(res.data["code"], "token_not_valid")
 
             token.set_exp(lifetime=-timedelta(seconds=1))
 
-            res = self.view_post(data={'refresh': str(token)})
+            res = self.view_post(data={"refresh": str(token)})
             self.assertEqual(res.status_code, 401)
-            self.assertEqual(res.data['code'], 'token_not_valid')
+            self.assertEqual(res.data["code"], "token_not_valid")
 
         def test_it_should_return_if_everything_ok(self):
             refresh = RefreshToken()
-            refresh['test_claim'] = 'arst'
+            refresh["test_claim"] = "arst"
 
             # View returns 200
             now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            with patch('rest_framework_simplejwt_mongoengine.tokens.aware_utcnow') as fake_aware_utcnow:
+            with patch(
+                "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+            ) as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
 
-                res = self.view_post(data={'refresh': str(refresh)})
+                res = self.view_post(data={"refresh": str(refresh)})
 
             self.assertEqual(res.status_code, 200)
 
@@ -391,20 +401,22 @@ if drf_simplejwt_version in ["5.0.0"]:
 
         def test_it_should_return_401_if_token_is_blacklisted(self):
             refresh = RefreshToken()
-            refresh['test_claim'] = 'arst'
+            refresh["test_claim"] = "arst"
 
             # View returns 200
             now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            with patch('rest_framework_simplejwt_mongoengine.tokens.aware_utcnow') as fake_aware_utcnow:
+            with patch(
+                "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+            ) as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
 
-                res = self.view_post(data={'refresh': str(refresh)})
+                res = self.view_post(data={"refresh": str(refresh)})
 
             self.assertEqual(res.status_code, 200)
 
-            self.view_name = 'token_refresh'
-            res = self.view_post(data={'refresh': str(refresh)})
+            self.view_name = "token_refresh"
+            res = self.view_post(data={"refresh": str(refresh)})
             # make sure other tests are not affected
             del self.view_name
 

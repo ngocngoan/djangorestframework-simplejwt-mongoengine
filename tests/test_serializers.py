@@ -16,7 +16,7 @@ from rest_framework_simplejwt_mongoengine.serializers import (
     TokenObtainSlidingSerializer,
     TokenRefreshSerializer,
     TokenRefreshSlidingSerializer,
-    TokenVerifySerializer
+    TokenVerifySerializer,
 )
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.token_blacklist.models import (
@@ -28,7 +28,10 @@ from rest_framework_simplejwt_mongoengine.tokens import (
     RefreshToken,
     SlidingToken,
 )
-from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version, microseconds_to_milliseconds
+from rest_framework_simplejwt_mongoengine.utils import (
+    drf_simplejwt_version,
+    microseconds_to_milliseconds,
+)
 
 from .utils import BaseTestCase, override_api_settings
 
@@ -183,18 +186,26 @@ class TestTokenRefreshSlidingSerializer(BaseTestCase):
         with self.assertRaises(TokenError) as e:
             s.is_valid()
 
-        self.assertIn("has no '{}' claim".format(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM), e.exception.args[0])
+        self.assertIn(
+            f"has no '{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim",
+            e.exception.args[0],
+        )
 
     def test_it_should_raise_token_error_if_token_has_refresh_period_expired(self):
         token = SlidingToken()
-        token.set_exp(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(days=1))
+        token.set_exp(
+            api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(days=1)
+        )
 
         s = TokenRefreshSlidingSerializer(data={"token": str(token)})
 
         with self.assertRaises(TokenError) as e:
             s.is_valid()
 
-        self.assertIn("'{}' claim has expired".format(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM), e.exception.args[0])
+        self.assertIn(
+            f"'{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim has expired",
+            e.exception.args[0],
+        )
 
     def test_it_should_raise_token_error_if_token_has_wrong_type(self):
         token = SlidingToken()
@@ -265,16 +276,23 @@ class TestTokenRefreshSerializer(BaseTestCase):
         # Serializer validates
         s = TokenRefreshSerializer(data={"refresh": str(refresh)})
 
-        now = microseconds_to_milliseconds(aware_utcnow()) - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        now = (
+            microseconds_to_milliseconds(aware_utcnow())
+            - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        )
 
-        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+        with patch(
+            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+        ) as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
             self.assertTrue(s.is_valid())
 
         access = AccessToken(s.validated_data["access"])
 
         self.assertEqual(refresh["test_claim"], access["test_claim"])
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
 
     def test_it_should_return_refresh_token_if_tokens_should_be_rotated(self):
         refresh = RefreshToken()
@@ -287,10 +305,17 @@ class TestTokenRefreshSerializer(BaseTestCase):
         # Serializer validates
         ser = TokenRefreshSerializer(data={"refresh": str(refresh)})
 
-        now = microseconds_to_milliseconds(aware_utcnow()) - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        now = (
+            microseconds_to_milliseconds(aware_utcnow())
+            - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        )
 
-        with override_api_settings(ROTATE_REFRESH_TOKENS=True, BLACKLIST_AFTER_ROTATION=False):
-            with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+        with override_api_settings(
+            ROTATE_REFRESH_TOKENS=True, BLACKLIST_AFTER_ROTATION=False
+        ):
+            with patch(
+                "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+            ) as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
                 self.assertTrue(ser.is_valid())
 
@@ -303,10 +328,17 @@ class TestTokenRefreshSerializer(BaseTestCase):
         self.assertNotEqual(old_jti, new_refresh["jti"])
         self.assertNotEqual(old_exp, new_refresh["exp"])
 
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
-        self.assertEqual(new_refresh["exp"], datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
+        self.assertEqual(
+            new_refresh["exp"],
+            datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME),
+        )
 
-    def test_it_should_blacklist_refresh_token_if_tokens_should_be_rotated_and_blacklisted(self):
+    def test_it_should_blacklist_refresh_token_if_tokens_should_be_rotated_and_blacklisted(
+        self,
+    ):
         self.assertEqual(OutstandingToken.objects.count(), 0)
         self.assertEqual(BlacklistedToken.objects.count(), 0)
 
@@ -320,10 +352,17 @@ class TestTokenRefreshSerializer(BaseTestCase):
         # Serializer validates
         ser = TokenRefreshSerializer(data={"refresh": str(refresh)})
 
-        now = microseconds_to_milliseconds(aware_utcnow()) - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        now = (
+            microseconds_to_milliseconds(aware_utcnow())
+            - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        )
 
-        with override_api_settings(ROTATE_REFRESH_TOKENS=True, BLACKLIST_AFTER_ROTATION=True):
-            with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+        with override_api_settings(
+            ROTATE_REFRESH_TOKENS=True, BLACKLIST_AFTER_ROTATION=True
+        ):
+            with patch(
+                "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+            ) as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
                 self.assertTrue(ser.is_valid())
 
@@ -336,8 +375,13 @@ class TestTokenRefreshSerializer(BaseTestCase):
         self.assertNotEqual(old_jti, new_refresh["jti"])
         self.assertNotEqual(old_exp, new_refresh["exp"])
 
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
-        self.assertEqual(new_refresh["exp"], datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
+        self.assertEqual(
+            new_refresh["exp"],
+            datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME),
+        )
 
         self.assertEqual(OutstandingToken.objects.count(), 1)
         self.assertEqual(BlacklistedToken.objects.count(), 1)
@@ -382,25 +426,31 @@ class TestTokenVerifySerializer(BaseTestCase):
         # Serializer validates
         s = TokenVerifySerializer(data={"token": str(refresh)})
 
-        now = microseconds_to_milliseconds(aware_utcnow()) - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        now = (
+            microseconds_to_milliseconds(aware_utcnow())
+            - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        )
 
-        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+        with patch(
+            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
+        ) as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
             self.assertTrue(s.is_valid())
 
         self.assertEqual(len(s.validated_data), 0)
 
 
-if drf_simplejwt_version in ["5.0.0"]:
-    from rest_framework_simplejwt_mongoengine.serializers import TokenBlacklistSerializer
-
+if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
+    from rest_framework_simplejwt_mongoengine.serializers import (
+        TokenBlacklistSerializer,
+    )
 
     class TestTokenBlacklistSerializer(BaseTestCase):
         def test_it_should_raise_token_error_if_token_invalid(self):
             token = RefreshToken()
-            del token['exp']
+            del token["exp"]
 
-            s = TokenBlacklistSerializer(data={'refresh': str(token)})
+            s = TokenBlacklistSerializer(data={"refresh": str(token)})
 
             with self.assertRaises(TokenError) as e:
                 s.is_valid()
@@ -409,18 +459,18 @@ if drf_simplejwt_version in ["5.0.0"]:
 
             token.set_exp(lifetime=-timedelta(days=1))
 
-            s = TokenBlacklistSerializer(data={'refresh': str(token)})
+            s = TokenBlacklistSerializer(data={"refresh": str(token)})
 
             with self.assertRaises(TokenError) as e:
                 s.is_valid()
 
-            self.assertIn('invalid or expired', e.exception.args[0])
+            self.assertIn("invalid or expired", e.exception.args[0])
 
         def test_it_should_raise_token_error_if_token_has_wrong_type(self):
             token = RefreshToken()
-            token[api_settings.TOKEN_TYPE_CLAIM] = 'wrong_type'
+            token[api_settings.TOKEN_TYPE_CLAIM] = "wrong_type"
 
-            s = TokenBlacklistSerializer(data={'refresh': str(token)})
+            s = TokenBlacklistSerializer(data={"refresh": str(token)})
 
             with self.assertRaises(TokenError) as e:
                 s.is_valid()
@@ -429,14 +479,16 @@ if drf_simplejwt_version in ["5.0.0"]:
 
         def test_it_should_return_nothing_if_everything_ok(self):
             refresh = RefreshToken()
-            refresh['test_claim'] = 'arst'
+            refresh["test_claim"] = "arst"
 
             # Serializer validates
-            s = TokenBlacklistSerializer(data={'refresh': str(refresh)})
+            s = TokenBlacklistSerializer(data={"refresh": str(refresh)})
 
             now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            with patch('rest_framework_simplejwt.tokens.aware_utcnow') as fake_aware_utcnow:
+            with patch(
+                "rest_framework_simplejwt.tokens.aware_utcnow"
+            ) as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
                 self.assertTrue(s.is_valid())
 
@@ -448,16 +500,18 @@ if drf_simplejwt_version in ["5.0.0"]:
 
             refresh = RefreshToken()
 
-            refresh['test_claim'] = 'arst'
+            refresh["test_claim"] = "arst"
 
-            old_jti = refresh['jti']
+            old_jti = refresh["jti"]
 
             # Serializer validates
-            ser = TokenBlacklistSerializer(data={'refresh': str(refresh)})
+            ser = TokenBlacklistSerializer(data={"refresh": str(refresh)})
 
             now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            with patch('rest_framework_simplejwt.tokens.aware_utcnow') as fake_aware_utcnow:
+            with patch(
+                "rest_framework_simplejwt.tokens.aware_utcnow"
+            ) as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
                 self.assertTrue(ser.is_valid())
 
