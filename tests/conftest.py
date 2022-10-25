@@ -12,7 +12,9 @@ def pytest_configure():
         ALLOWED_HOSTS=["*"],
         DEBUG=True,
         DEBUG_PROPAGATE_EXCEPTIONS=True,
-        DATABASES={"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}},
+        DATABASES={
+            "default": {"ENGINE": "django.db.backends.sqlite3", "NAME": ":memory:"}
+        },
         MONGODB_DATABASES={
             "default": {
                 "host": "127.0.0.1",
@@ -49,7 +51,6 @@ def pytest_configure():
         SITE_ID=1,
         SECRET_KEY="not very secret in tests",
         USE_I18N=True,
-        USE_L10N=True,
         STATIC_URL="/static/",
         ROOT_URLCONF="tests.urls",
         TEMPLATES=[
