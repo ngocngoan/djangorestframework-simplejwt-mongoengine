@@ -28,6 +28,14 @@ jobs:
         # mongoengine-version: ['0.22', '0.23', '0.24']
         django-mongoengine-version: ['0.5.4']
         drf-simplejwt-version: ['4.7', '4.8', '5.0', '5.1']
+        pyjwt-version: ['1.7.1', '2']
+        exclude:
+          - drf-simplejwt-version: '4.7'
+            pyjwt-version: '1.7.1'
+          - drf-simplejwt-version: '4.8'
+            pyjwt-version: '1.7.1'
+          - drf-simplejwt-version: '5.0'
+            pyjwt-version: '1.7.1'
 
     steps:
       - name: Checkout Code Repository
