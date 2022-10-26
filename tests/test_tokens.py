@@ -1,6 +1,7 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
+import pytest
 from django_mongoengine.mongo_auth.managers import get_user_document
 from jose import jwt
 from rest_framework_simplejwt.exceptions import TokenError
@@ -322,21 +323,23 @@ class TestToken(BaseTestCase):
                 "refresh_exp", current_time=current_time + timedelta(days=2)
             )
 
-    if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+    @pytest.mark.skipif(
+        drf_simplejwt_version in ["4.7.0", "4.7.1", "4.7.2"],
+        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
+    )
+    def test_check_token_not_expired_if_in_leeway(self):
+        token = MyToken()
+        token.set_exp("refresh_exp", lifetime=timedelta(days=1))
 
-        def test_check_token_not_expired_if_in_leeway(self):
-            token = MyToken()
-            token.set_exp("refresh_exp", lifetime=timedelta(days=1))
+        datetime_in_leeway = token.current_time + timedelta(days=1)
 
-            datetime_in_leeway = token.current_time + timedelta(days=1)
-
-            with self.assertRaises(TokenError):
-                token.check_exp("refresh_exp", current_time=datetime_in_leeway)
-
-            # a token 1 day expired is valid if leeway is 2 days
-            token.token_backend.leeway = timedelta(days=2).total_seconds()
+        with self.assertRaises(TokenError):
             token.check_exp("refresh_exp", current_time=datetime_in_leeway)
-            token.token_backend.leeway = 0
+
+        # a token 1 day expired is valid if leeway is 2 days
+        token.token_backend.leeway = timedelta(days=2).total_seconds()
+        token.check_exp("refresh_exp", current_time=datetime_in_leeway)
+        token.token_backend.leeway = 0
 
     def test_for_user(self):
         username = "test_user"

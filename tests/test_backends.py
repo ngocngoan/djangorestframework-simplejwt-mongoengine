@@ -3,11 +3,17 @@ from unittest import mock
 from unittest.mock import patch
 
 import jwt
-from jwt import PyJWS, algorithms
-from rest_framework_simplejwt.backends import TokenBackend
+import pytest
+from jwt import PyJWS
+from jwt import __version__ as jwt_version
+from jwt import algorithms
 from rest_framework_simplejwt.exceptions import TokenBackendError
 from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch, make_utc
 
+from rest_framework_simplejwt_mongoengine.backends import (
+    JWK_CLIENT_AVAILABLE,
+    TokenBackend,
+)
 from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
 from tests.keys import (
     ES256_PRIVATE_KEY,
@@ -29,6 +35,8 @@ ISSUER = "https://www.myoidcprovider.com"
 JWK_URL = "https://randomstring.auth0.com/.well-known/jwks.json"
 
 LEEWAY = 100
+
+IS_OLD_JWT = jwt_version == "1.7.1"
 
 
 class TestTokenBackend(BaseTestCase):
@@ -178,7 +186,7 @@ class TestTokenBackend(BaseTestCase):
     def test_decode_with_invalid_sig(self):
         self.payload["exp"] = aware_utcnow() - timedelta(seconds=1)
         for backend in self.backends:
-            with self.subTest("Test decode with invalid sig for f{backend.algorithm}"):
+            with self.subTest(f"Test decode with invalid sig for {backend.algorithm}"):
                 payload = self.payload.copy()
                 payload["exp"] = aware_utcnow() + timedelta(days=1)
                 token_1 = jwt.encode(
@@ -188,6 +196,10 @@ class TestTokenBackend(BaseTestCase):
                 token_2 = jwt.encode(
                     payload, backend.signing_key, algorithm=backend.algorithm
                 )
+
+                if IS_OLD_JWT:
+                    token_1 = token_1.decode("utf-8")
+                    token_2 = token_2.decode("utf-8")
 
                 token_2_payload = token_2.rsplit(".", 1)[0]
                 token_1_sig = token_1.rsplit(".", 1)[-1]
@@ -208,8 +220,12 @@ class TestTokenBackend(BaseTestCase):
                 token_2 = jwt.encode(
                     payload, backend.signing_key, algorithm=backend.algorithm
                 )
-                # Payload copied
-                payload["exp"] = datetime_to_epoch(payload["exp"])
+                if IS_OLD_JWT:
+                    token_1 = token_1.decode("utf-8")
+                    token_2 = token_2.decode("utf-8")
+                else:
+                    # Payload copied
+                    payload["exp"] = datetime_to_epoch(payload["exp"])
 
                 token_2_payload = token_2.rsplit(".", 1)[0]
                 token_1_sig = token_1.rsplit(".", 1)[-1]
@@ -229,9 +245,13 @@ class TestTokenBackend(BaseTestCase):
                 token = jwt.encode(
                     self.payload, backend.signing_key, algorithm=backend.algorithm
                 )
-                # Payload copied
-                payload = self.payload.copy()
-                payload["exp"] = datetime_to_epoch(self.payload["exp"])
+                if IS_OLD_JWT:
+                    token = token.decode("utf-8")
+                    payload = self.payload
+                else:
+                    # Payload copied
+                    payload = self.payload.copy()
+                    payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
                 self.assertEqual(backend.decode(token), payload)
 
@@ -242,50 +262,54 @@ class TestTokenBackend(BaseTestCase):
         self.payload["iss"] = ISSUER
 
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
-        # Payload copied
-        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
-
-        self.assertEqual(self.aud_iss_token_backend.decode(token), self.payload)
-
-    if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
-
-        def test_decode_rsa_aud_iss_jwk_success(self):
-            self.payload["exp"] = aware_utcnow() + timedelta(days=1)
-            self.payload["foo"] = "baz"
-            self.payload["aud"] = AUDIENCE
-            self.payload["iss"] = ISSUER
-
-            token = jwt.encode(
-                self.payload,
-                PRIVATE_KEY_2,
-                algorithm="RS256",
-                headers={"kid": "230498151c214b788dd97f22b85410a5"},
-            )
+        if IS_OLD_JWT:
+            token = token.decode("utf-8")
+        else:
             # Payload copied
             self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
-            mock_jwk_module = mock.MagicMock()
-            with patch(
-                "rest_framework_simplejwt.backends.PyJWKClient"
-            ) as mock_jwk_module:
-                mock_jwk_client = mock.MagicMock()
-                mock_signing_key = mock.MagicMock()
+        self.assertEqual(self.aud_iss_token_backend.decode(token), self.payload)
 
-                mock_jwk_module.return_value = mock_jwk_client
-                mock_jwk_client.get_signing_key_from_jwt.return_value = mock_signing_key
-                type(mock_signing_key).key = mock.PropertyMock(
-                    return_value=PUBLIC_KEY_2
-                )
+    @pytest.mark.skipif(
+        not JWK_CLIENT_AVAILABLE
+        or drf_simplejwt_version in ["4.7.0", "4.7.1", "4.7.2"],
+        reason="PyJWT 1.7.1 doesn't have JWK client or Django simplejwt version 4.7.x doesn't have backend PyJWKClient",
+    )
+    def test_decode_rsa_aud_iss_jwk_success(self):
+        self.payload["exp"] = aware_utcnow() + timedelta(days=1)
+        self.payload["foo"] = "baz"
+        self.payload["aud"] = AUDIENCE
+        self.payload["iss"] = ISSUER
 
-                # Note the PRIV,PUB care is intentially the original pairing
-                jwk_token_backend = TokenBackend(
-                    "RS256", PRIVATE_KEY, PUBLIC_KEY, AUDIENCE, ISSUER, JWK_URL
-                )
+        token = jwt.encode(
+            self.payload,
+            PRIVATE_KEY_2,
+            algorithm="RS256",
+            headers={"kid": "230498151c214b788dd97f22b85410a5"},
+        )
+        # Payload copied
+        self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
-                self.assertEqual(jwk_token_backend.decode(token), self.payload)
+        mock_jwk_module = mock.MagicMock()
+        with patch("rest_framework_simplejwt.backends.PyJWKClient") as mock_jwk_module:
+            mock_jwk_client = mock.MagicMock()
+            mock_signing_key = mock.MagicMock()
+
+            mock_jwk_module.return_value = mock_jwk_client
+            mock_jwk_client.get_signing_key_from_jwt.return_value = mock_signing_key
+            type(mock_signing_key).key = mock.PropertyMock(return_value=PUBLIC_KEY_2)
+
+            # Note the PRIV,PUB care is intentially the original pairing
+            jwk_token_backend = TokenBackend(
+                "RS256", PRIVATE_KEY, PUBLIC_KEY, AUDIENCE, ISSUER, JWK_URL
+            )
+
+            self.assertEqual(jwk_token_backend.decode(token), self.payload)
 
     def test_decode_when_algorithm_not_available(self):
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
+        if IS_OLD_JWT:
+            token = token.decode("utf-8")
 
         pyjwt_without_rsa = PyJWS()
         pyjwt_without_rsa.unregister_algorithm("RS256")
@@ -309,30 +333,38 @@ class TestTokenBackend(BaseTestCase):
 
     def test_decode_when_token_algorithm_does_not_match(self):
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
+        if IS_OLD_JWT:
+            token = token.decode("utf-8")
 
         with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
             self.hmac_token_backend.decode(token)
 
-    if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+    @pytest.mark.skipif(
+        drf_simplejwt_version in ["4.7.0", "4.7.1", "4.7.2"],
+        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
+    )
+    def test_decode_leeway_hmac_fail(self):
+        self.payload["exp"] = datetime_to_epoch(
+            aware_utcnow() - timedelta(seconds=LEEWAY * 2)
+        )
 
-        def test_decode_leeway_hmac_fail(self):
-            self.payload["exp"] = datetime_to_epoch(
-                aware_utcnow() - timedelta(seconds=LEEWAY * 2)
-            )
+        expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
 
-            expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
+        with self.assertRaises(TokenBackendError):
+            self.hmac_leeway_token_backend.decode(expired_token)
 
-            with self.assertRaises(TokenBackendError):
-                self.hmac_leeway_token_backend.decode(expired_token)
+    @pytest.mark.skipif(
+        drf_simplejwt_version in ["4.7.0", "4.7.1", "4.7.2"],
+        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
+    )
+    def test_decode_leeway_hmac_success(self):
+        self.payload["exp"] = datetime_to_epoch(
+            aware_utcnow() - timedelta(seconds=LEEWAY / 2)
+        )
 
-        def test_decode_leeway_hmac_success(self):
-            self.payload["exp"] = datetime_to_epoch(
-                aware_utcnow() - timedelta(seconds=LEEWAY / 2)
-            )
+        expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
 
-            expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
-
-            self.assertEqual(
-                self.hmac_leeway_token_backend.decode(expired_token),
-                self.payload,
-            )
+        self.assertEqual(
+            self.hmac_leeway_token_backend.decode(expired_token),
+            self.payload,
+        )
