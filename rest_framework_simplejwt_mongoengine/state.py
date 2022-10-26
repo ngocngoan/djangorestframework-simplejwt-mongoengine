@@ -1,5 +1,4 @@
-from rest_framework_simplejwt.backends import TokenBackend
-
+from .backends import TokenBackend
 from .settings import api_settings
 from .utils import drf_simplejwt_version
 
