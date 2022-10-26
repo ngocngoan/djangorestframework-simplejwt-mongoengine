@@ -22,7 +22,7 @@ class TokenUser:
         self.token = token
 
     def __str__(self):
-        return "TokenUser {}".format(self.id)
+        return f"TokenUser {self.id}"
 
     @cached_property
     def id(self):
@@ -90,3 +90,7 @@ class TokenUser:
 
     def get_username(self):
         return self.username
+
+    def __getattr__(self, attr):
+        """This acts as a backup attribute getter for custom claims defined in Token serializers."""
+        return self.token.get(attr, None)
