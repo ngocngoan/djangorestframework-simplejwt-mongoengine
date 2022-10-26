@@ -1,7 +1,24 @@
-from rest_framework_simplejwt.views import TokenViewBase
+from django.utils.module_loading import import_string
+from rest_framework_simplejwt.views import TokenViewBase as SimpleJWTTokenViewBase
 
-from . import serializers
-from .utils import drf_simplejwt_version
+from .settings import api_settings
+
+
+class TokenViewBase(SimpleJWTTokenViewBase):
+    _serializer_class = ""
+
+    def get_serializer_class(self):
+        """
+        If serializer_class is set, use it directly. Otherwise get the class from settings.
+        """
+
+        if self.serializer_class:
+            return self.serializer_class
+        try:
+            return import_string(self._serializer_class)
+        except ImportError:
+            msg = "Could not import serializer '%s'" % self._serializer_class
+            raise ImportError(msg)
 
 
 class TokenObtainPairView(TokenViewBase):
@@ -10,7 +27,7 @@ class TokenObtainPairView(TokenViewBase):
     token pair to prove the authentication of those credentials.
     """
 
-    serializer_class = serializers.TokenObtainPairSerializer
+    _serializer_class = api_settings.TOKEN_OBTAIN_SERIALIZER
 
 
 token_obtain_pair = TokenObtainPairView.as_view()
@@ -22,7 +39,7 @@ class TokenRefreshView(TokenViewBase):
     token if the refresh token is valid.
     """
 
-    serializer_class = serializers.TokenRefreshSerializer
+    _serializer_class = api_settings.TOKEN_REFRESH_SERIALIZER
 
 
 token_refresh = TokenRefreshView.as_view()
@@ -34,7 +51,7 @@ class TokenObtainSlidingView(TokenViewBase):
     prove the authentication of those credentials.
     """
 
-    serializer_class = serializers.TokenObtainSlidingSerializer
+    _serializer_class = api_settings.SLIDING_TOKEN_OBTAIN_SERIALIZER
 
 
 token_obtain_sliding = TokenObtainSlidingView.as_view()
@@ -46,7 +63,7 @@ class TokenRefreshSlidingView(TokenViewBase):
     token's refresh period has not expired.
     """
 
-    serializer_class = serializers.TokenRefreshSlidingSerializer
+    _serializer_class = api_settings.SLIDING_TOKEN_REFRESH_SERIALIZER
 
 
 token_refresh_sliding = TokenRefreshSlidingView.as_view()
@@ -58,20 +75,19 @@ class TokenVerifyView(TokenViewBase):
     information about a token's fitness for a particular use.
     """
 
-    serializer_class = serializers.TokenVerifySerializer
+    _serializer_class = api_settings.TOKEN_VERIFY_SERIALIZER
 
 
 token_verify = TokenVerifyView.as_view()
 
 
-if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
+class TokenBlacklistView(TokenViewBase):
+    """
+    Takes a token and blacklists it. Must be used with the
+    `rest_framework_simplejwt.token_blacklist` app installed.
+    """
 
-    class TokenBlacklistView(TokenViewBase):
-        """
-        Takes a token and blacklists it. Must be used with the
-        `rest_framework_simplejwt.token_blacklist` app installed.
-        """
+    _serializer_class = api_settings.TOKEN_BLACKLIST_SERIALIZER
 
-        serializer_class = serializers.TokenBlacklistSerializer
 
-    token_blacklist = TokenBlacklistView.as_view()
+token_blacklist = TokenBlacklistView.as_view()

@@ -7,7 +7,15 @@ USER_SETTINGS = getattr(settings, "SIMPLE_JWT_MONGOENGINE", None)
 DEFAULTS.update(
     {
         "TOKEN_USER_CLASS": "rest_framework_simplejwt_mongoengine.models.TokenUser",
-        "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt_mongoengine.tokens.AccessToken",),
+        "AUTH_TOKEN_CLASSES": (
+            "rest_framework_simplejwt_mongoengine.tokens.AccessToken",
+        ),
+        "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenObtainPairSerializer",
+        "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenRefreshSerializer",
+        "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenVerifySerializer",
+        "TOKEN_BLACKLIST_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenBlacklistSerializer",
+        "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenObtainSlidingSerializer",  # noqa: E501
+        "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenRefreshSlidingSerializer",  # noqa: E501
     }
 )
 
