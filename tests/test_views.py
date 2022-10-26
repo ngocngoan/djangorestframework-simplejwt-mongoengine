@@ -4,6 +4,7 @@ from unittest.mock import patch
 
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
+from rest_framework.test import APIRequestFactory
 from rest_framework_simplejwt.utils import (
     aware_utcnow,
     datetime_from_epoch,
@@ -18,6 +19,7 @@ from rest_framework_simplejwt_mongoengine.tokens import (
     SlidingToken,
 )
 from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
+from rest_framework_simplejwt_mongoengine.views import TokenViewBase
 
 from .utils import APIViewTestCase, override_api_settings
 
@@ -421,3 +423,15 @@ if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
             del self.view_name
 
             self.assertEqual(res.status_code, 401)
+
+
+class TestCustomTokenView(APIViewTestCase):
+    def test_custom_view_class(self):
+        class CustomTokenView(TokenViewBase):
+            serializer_class = serializers.TokenObtainPairSerializer
+
+        factory = APIRequestFactory()
+        view = CustomTokenView.as_view()
+        request = factory.post("/", {}, format="json")
+        res = view(request)
+        self.assertEqual(res.status_code, 400)
