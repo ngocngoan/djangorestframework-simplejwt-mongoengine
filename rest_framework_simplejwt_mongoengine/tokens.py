@@ -13,6 +13,8 @@ from rest_framework_simplejwt.utils import (
     format_lazy,
 )
 
+from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
+
 from .settings import api_settings
 from .token_blacklist.models import BlacklistedToken, OutstandingToken
 from .utils import microseconds_to_milliseconds
@@ -162,8 +164,13 @@ class Token(SimpleJWTToken):
             raise TokenError(format_lazy(_("Token has no '{}' claim"), claim))
 
         claim_time = datetime_from_epoch(claim_value)
-        if claim_time <= current_time:
-            raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
+        if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
+            leeway = self.get_token_backend().leeway
+            if claim_time <= current_time - timedelta(seconds=leeway):
+                raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
+        else:
+            if claim_time <= current_time:
+                raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
     @classmethod
     def for_user(cls, user):
@@ -182,12 +189,17 @@ class Token(SimpleJWTToken):
 
     _token_backend = None
 
-    def get_token_backend(self):
+    @property
+    def token_backend(self):
         if self._token_backend is None:
             self._token_backend = import_string(
                 "rest_framework_simplejwt_mongoengine.state.token_backend"
             )
         return self._token_backend
+
+    def get_token_backend(self):
+        # Backward compatibility.
+        return self.token_backend
 
 
 class BlacklistMixin:
