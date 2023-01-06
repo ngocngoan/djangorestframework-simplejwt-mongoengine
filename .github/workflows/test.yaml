@@ -57,7 +57,7 @@ jobs:
           echo "CACHE_DIR=$(pip cache dir)" >> $GITHUB_OUTPUT
 
       - name: Cache
-        uses: actions/cache@v3.0.11
+        uses: actions/cache@v3.2.2
         with:
           path: ${{ steps.pip-cache.outputs.CACHE_DIR }}
           key:
