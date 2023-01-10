@@ -16,7 +16,7 @@ Welcome to Simple JWT MongoEngine's documentation!
    creating_tokens_manually
    token_types
    blacklist_app
-   experimental_features
+   stateless_user_authentication
 
 
 

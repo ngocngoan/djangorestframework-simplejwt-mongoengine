@@ -1,7 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework import HTTP_HEADER_ENCODING
-
 from rest_framework_simplejwt.authentication import (
     JWTAuthentication as SimpleJWTAuthentication,
 )
@@ -13,16 +12,12 @@ from rest_framework_simplejwt.exceptions import (
 
 from .settings import api_settings
 
-
 AUTH_HEADER_TYPES = api_settings.AUTH_HEADER_TYPES
 
 if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):
     AUTH_HEADER_TYPES = (AUTH_HEADER_TYPES,)
 
-AUTH_HEADER_TYPE_BYTES = set(
-    h.encode(HTTP_HEADER_ENCODING)
-    for h in AUTH_HEADER_TYPES
-)
+AUTH_HEADER_TYPE_BYTES = {h.encode(HTTP_HEADER_ENCODING) for h in AUTH_HEADER_TYPES}
 
 
 class JWTAuthentication(SimpleJWTAuthentication):
@@ -30,6 +25,7 @@ class JWTAuthentication(SimpleJWTAuthentication):
     An authentication plugin that authenticates requests through a JSON web
     token provided in a request header.
     """
+
     www_authenticate_realm = "api"
     media_type = "application/json"
 
@@ -51,7 +47,7 @@ class JWTAuthentication(SimpleJWTAuthentication):
         return self.get_user(validated_token), validated_token
 
     def authenticate_header(self, request):
-        return '{0} realm="{1}"'.format(
+        return '{} realm="{}"'.format(
             AUTH_HEADER_TYPES[0],
             self.www_authenticate_realm,
         )
@@ -137,7 +133,12 @@ class JWTAuthentication(SimpleJWTAuthentication):
         return user
 
 
-class JWTTokenUserAuthentication(JWTAuthentication):
+class JWTStatelessUserAuthentication(JWTAuthentication):
+    """
+    An authentication plugin that authenticates requests through a JSON web
+    token provided in a request header without performing a database lookup to obtain a user instance.
+    """
+
     def get_user(self, validated_token):
         """
         Returns a stateless user object which is backed by the given validated
@@ -149,3 +150,6 @@ class JWTTokenUserAuthentication(JWTAuthentication):
             raise InvalidToken(_("Token contained no recognizable user identification"))
 
         return api_settings.TOKEN_USER_CLASS(validated_token)
+
+
+JWTTokenUserAuthentication = JWTStatelessUserAuthentication
