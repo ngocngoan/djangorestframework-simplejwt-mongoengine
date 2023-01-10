@@ -6,12 +6,7 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
 from rest_framework_simplejwt.tokens import Token as SimpleJWTToken
-from rest_framework_simplejwt.utils import (
-    aware_utcnow,
-    datetime_from_epoch,
-    datetime_to_epoch,
-    format_lazy,
-)
+from rest_framework_simplejwt.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, format_lazy
 
 from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
 
@@ -160,17 +155,20 @@ class Token(SimpleJWTToken):
 
         try:
             claim_value = self.payload[claim]
-        except KeyError:
-            raise TokenError(format_lazy(_("Token has no '{}' claim"), claim))
+        except KeyError as ex:
+            raise TokenError(format_lazy(_("Token has no '{}' claim"), claim)) from ex
 
+        has_error = False
         claim_time = datetime_from_epoch(claim_value)
-        if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2"]:
-            leeway = self.get_token_backend().leeway
-            if claim_time <= current_time - timedelta(seconds=leeway):
-                raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
+
+        if "4.7" in drf_simplejwt_version:
+            has_error = claim_time <= current_time
         else:
-            if claim_time <= current_time:
-                raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
+            leeway = self.get_token_backend().get_leeway()
+            has_error = claim_time <= current_time - leeway
+
+        if has_error:
+            raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
     @classmethod
     def for_user(cls, user):
@@ -192,9 +190,7 @@ class Token(SimpleJWTToken):
     @property
     def token_backend(self):
         if self._token_backend is None:
-            self._token_backend = import_string(
-                "rest_framework_simplejwt_mongoengine.state.token_backend"
-            )
+            self._token_backend = import_string("rest_framework_simplejwt_mongoengine.state.token_backend")
         return self._token_backend
 
     def get_token_backend(self):
@@ -210,10 +206,7 @@ class BlacklistMixin:
     membership in a token blacklist.
     """
 
-    if (
-        "rest_framework_simplejwt_mongoengine.token_blacklist"
-        in settings.INSTALLED_APPS
-    ):
+    if "rest_framework_simplejwt_mongoengine.token_blacklist" in settings.INSTALLED_APPS:
 
         def verify(self, *args, **kwargs):
             self.check_blacklist()
@@ -227,9 +220,7 @@ class BlacklistMixin:
             """
             jti = self.payload[api_settings.JTI_CLAIM]
 
-            if BlacklistedToken.objects.filter(
-                token__in=OutstandingToken.objects.filter(jti=jti)
-            ).exists():
+            if BlacklistedToken.objects.filter(token__in=OutstandingToken.objects.filter(jti=jti)).exists():
                 raise TokenError(_("Token is blacklisted"))
 
         def blacklist(self):

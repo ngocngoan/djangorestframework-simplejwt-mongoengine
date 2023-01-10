@@ -4,22 +4,13 @@ from unittest.mock import patch
 import pytest
 from django_mongoengine.mongo_auth.managers import get_user_document
 from jose import jwt
-from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
 from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch, make_utc
 
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.state import token_backend
-from rest_framework_simplejwt_mongoengine.tokens import (
-    AccessToken,
-    RefreshToken,
-    SlidingToken,
-    Token,
-    UntypedToken,
-)
-from rest_framework_simplejwt_mongoengine.utils import (
-    drf_simplejwt_version,
-    microseconds_to_milliseconds,
-)
+from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken, Token, UntypedToken
+from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version, microseconds_to_milliseconds
 
 from .utils import BaseTestCase, override_api_settings
 
@@ -59,9 +50,7 @@ class TestToken(BaseTestCase):
     def test_init_no_token_given(self):
         now = make_utc(datetime(year=2000, month=1, day=1))
 
-        with patch(
-            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-        ) as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
             t = MyToken()
 
@@ -78,9 +67,7 @@ class TestToken(BaseTestCase):
         # Test successful instantiation
         original_now = microseconds_to_milliseconds(aware_utcnow())
 
-        with patch(
-            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-        ) as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = original_now
             good_token = MyToken()
 
@@ -90,9 +77,7 @@ class TestToken(BaseTestCase):
         now = microseconds_to_milliseconds(aware_utcnow())
 
         # Create new token from encoded token
-        with patch(
-            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-        ) as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
             # Should raise no exception
             t = MyToken(encoded_good_token)
@@ -111,9 +96,7 @@ class TestToken(BaseTestCase):
     def test_init_bad_sig_token_given(self):
         # Test backend rejects encoded token (expired or bad signature)
         payload = {"foo": "bar"}
-        payload["exp"] = microseconds_to_milliseconds(aware_utcnow()) + timedelta(
-            days=1
-        )
+        payload["exp"] = microseconds_to_milliseconds(aware_utcnow()) + timedelta(days=1)
         token_1 = jwt.encode(payload, api_settings.SIGNING_KEY, algorithm="HS256")
         payload["foo"] = "baz"
         token_2 = jwt.encode(payload, api_settings.SIGNING_KEY, algorithm="HS256")
@@ -128,9 +111,7 @@ class TestToken(BaseTestCase):
     def test_init_bad_sig_token_given_no_verify(self):
         # Test backend rejects encoded token (expired or bad signature)
         payload = {"foo": "bar"}
-        payload["exp"] = microseconds_to_milliseconds(aware_utcnow()) + timedelta(
-            days=1
-        )
+        payload["exp"] = microseconds_to_milliseconds(aware_utcnow()) + timedelta(days=1)
         token_1 = jwt.encode(payload, api_settings.SIGNING_KEY, algorithm="HS256")
         payload["foo"] = "baz"
         token_2 = jwt.encode(payload, api_settings.SIGNING_KEY, algorithm="HS256")
@@ -253,9 +234,7 @@ class TestToken(BaseTestCase):
         # Should allow overriding of beginning time, lifetime, and claim name
         token.set_exp(claim="refresh_exp", from_time=now, lifetime=timedelta(days=1))
         self.assertIn("refresh_exp", token)
-        self.assertEqual(
-            token["refresh_exp"], datetime_to_epoch(now + timedelta(days=1))
-        )
+        self.assertEqual(token["refresh_exp"], datetime_to_epoch(now + timedelta(days=1)))
 
     def test_set_iat(self):
         now = make_utc(datetime(year=2000, month=1, day=1))
@@ -270,9 +249,7 @@ class TestToken(BaseTestCase):
         # Should allow overriding of time and claim name
         token.set_iat(claim="refresh_iat", at_time=now + timedelta(days=1))
         self.assertIn("refresh_iat", token)
-        self.assertEqual(
-            token["refresh_iat"], datetime_to_epoch(now + timedelta(days=1))
-        )
+        self.assertEqual(token["refresh_iat"], datetime_to_epoch(now + timedelta(days=1)))
 
     def test_check_exp(self):
         token = MyToken()
@@ -315,16 +292,12 @@ class TestToken(BaseTestCase):
 
         # Given claim and timestamp
         with self.assertRaises(TokenError):
-            token.check_exp(
-                "refresh_exp", current_time=current_time + timedelta(days=1)
-            )
+            token.check_exp("refresh_exp", current_time=current_time + timedelta(days=1))
         with self.assertRaises(TokenError):
-            token.check_exp(
-                "refresh_exp", current_time=current_time + timedelta(days=2)
-            )
+            token.check_exp("refresh_exp", current_time=current_time + timedelta(days=2))
 
     @pytest.mark.skipif(
-        drf_simplejwt_version in ["4.7.0", "4.7.1", "4.7.2"],
+        "4.7" in drf_simplejwt_version,
         reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
     )
     def test_check_token_not_expired_if_in_leeway(self):
@@ -337,8 +310,33 @@ class TestToken(BaseTestCase):
             token.check_exp("refresh_exp", current_time=datetime_in_leeway)
 
         # a token 1 day expired is valid if leeway is 2 days
+        # float (seconds)
         token.token_backend.leeway = timedelta(days=2).total_seconds()
         token.check_exp("refresh_exp", current_time=datetime_in_leeway)
+
+        # timedelta
+        token.token_backend.leeway = timedelta(days=2)
+        token.check_exp("refresh_exp", current_time=datetime_in_leeway)
+
+        # integer (seconds)
+        token.token_backend.leeway = 10
+        token.check_exp("refresh_exp", current_time=datetime_in_leeway)
+
+        token.token_backend.leeway = 0
+
+    @pytest.mark.skipif(
+        "4.7" in drf_simplejwt_version,
+        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
+    )
+    def test_check_token_if_wrong_type_leeway(self):
+        token = MyToken()
+        token.set_exp("refresh_exp", lifetime=timedelta(days=1))
+
+        datetime_in_leeway = token.current_time + timedelta(days=1)
+
+        token.token_backend.leeway = "1"
+        with self.assertRaises(TokenBackendError):
+            token.check_exp("refresh_exp", current_time=datetime_in_leeway)
         token.token_backend.leeway = 0
 
     def test_for_user(self):
@@ -375,9 +373,7 @@ class TestSlidingToken(BaseTestCase):
 
         self.assertEqual(
             token[api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM],
-            datetime_to_epoch(
-                token.current_time + api_settings.SLIDING_TOKEN_REFRESH_LIFETIME
-            ),
+            datetime_to_epoch(token.current_time + api_settings.SLIDING_TOKEN_REFRESH_LIFETIME),
         )
         self.assertEqual(token[api_settings.TOKEN_TYPE_CLAIM], "sliding")
 
