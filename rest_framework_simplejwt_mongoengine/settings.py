@@ -7,6 +7,7 @@ USER_SETTINGS = getattr(settings, "SIMPLE_JWT_MONGOENGINE", None)
 DEFAULTS.update(
     {
         "JSON_ENCODER": None,
+        "USER_AUTHENTICATION_RULE": "rest_framework_simplejwt_mongoengine.authentication.default_user_authentication_rule",
         "TOKEN_USER_CLASS": "rest_framework_simplejwt_mongoengine.models.TokenUser",
         "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt_mongoengine.tokens.AccessToken",),
         "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenObtainPairSerializer",

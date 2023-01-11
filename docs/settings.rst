@@ -16,6 +16,8 @@ All Simple JWT MongoEngine's settings are the same as Simple JWT's settings exce
 
     SIMPLE_JWT_MONGOENGINE = {
         ...
+
+        'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt_mongoengine.authentication.default_user_authentication_rule',
         'TOKEN_USER_CLASS': ('rest_framework_simplejwt_mongoengine.models.TokenUser',),
         'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt_mongoengine.tokens.AccessToken',),
     }
