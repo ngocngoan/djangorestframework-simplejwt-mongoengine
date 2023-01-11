@@ -1,5 +1,6 @@
+import json
 from datetime import timedelta
-from typing import Union
+from typing import Optional, Type, Union
 
 import jwt
 from django.utils.translation import gettext_lazy as _
@@ -27,8 +28,8 @@ class TokenBackend(SimpleJwtTokenBackend):
         audience=None,
         issuer=None,
         jwk_url: str = None,
-        # leeway=0,
         leeway: Union[float, int, timedelta] = None,
+        json_encoder: Optional[Type[json.JSONEncoder]] = None,
     ):
         if "4.7" in drf_simplejwt_version:
             super().__init__(algorithm, signing_key, verifying_key, audience, issuer)
@@ -39,6 +40,8 @@ class TokenBackend(SimpleJwtTokenBackend):
             self.jwks_client = PyJWKClient(jwk_url) if jwk_url else None
         else:
             self.jwks_client = None
+
+        self.json_encoder = json_encoder
 
     def get_leeway(self) -> timedelta:
         leeway = getattr(self, "leeway", None)
@@ -56,6 +59,28 @@ class TokenBackend(SimpleJwtTokenBackend):
                     type(self.leeway),
                 )
             )
+
+    def encode(self, payload):
+        """
+        Returns an encoded token for the given payload dictionary.
+        """
+        jwt_payload = payload.copy()
+        if self.audience is not None:
+            jwt_payload["aud"] = self.audience
+        if self.issuer is not None:
+            jwt_payload["iss"] = self.issuer
+
+        token = jwt.encode(
+            jwt_payload,
+            self.signing_key,
+            algorithm=self.algorithm,
+            json_encoder=self.json_encoder,
+        )
+        if isinstance(token, bytes):
+            # For PyJWT <= 1.7.1
+            return token.decode("utf-8")
+        # For PyJWT >= 2.0.0a1
+        return token
 
     def decode(self, token, verify=True):
         """
