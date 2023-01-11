@@ -2,6 +2,21 @@
 Changelog
 =======
 
+1.2.0
+------------------
+
+* Remove the JWTTokenUserAuthentication from the Experimental Features
+* Fix leeway type error
+* Add info on TokenBlacklistView to the docs
+* Update JWTStatelessUserAuthentication docs
+* Allow none jti claim token type clai
+* Allow customizing token JSON encoding
+* Optimize default_user_authentication_rule
+* Add back support for PyJWT 1.7.1
+* Make the token serializer configurable
+* Add blacklist view to log out users
+* Set default verifying key to empty str
+
 1.0.0 (2021-08-20)
 ------------------
 
