@@ -91,12 +91,12 @@ class JWTAuthentication(SimpleJWTAuthentication):
         for AuthToken in api_settings.AUTH_TOKEN_CLASSES:
             try:
                 return AuthToken(raw_token)
-            except TokenError as e:
+            except TokenError as ex:
                 messages.append(
                     {
                         "token_class": AuthToken.__name__,
                         "token_type": AuthToken.token_type,
-                        "message": e.args[0],
+                        "message": ex.args[0],
                     }
                 )
 
