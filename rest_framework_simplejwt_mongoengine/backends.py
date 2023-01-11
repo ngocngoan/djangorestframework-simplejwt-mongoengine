@@ -4,22 +4,31 @@ from typing import Optional, Type, Union
 
 import jwt
 from django.utils.translation import gettext_lazy as _
-from jwt import InvalidAlgorithmError, InvalidTokenError
-from rest_framework_simplejwt.backends import TokenBackend as SimpleJwtTokenBackend
+from jwt import InvalidAlgorithmError, InvalidTokenError, algorithms
 from rest_framework_simplejwt.exceptions import TokenBackendError
 from rest_framework_simplejwt.utils import format_lazy
 
-from .utils import drf_simplejwt_version
-
 try:
-    from jwt import PyJWKClient
+    from jwt import PyJWKClient, PyJWKClientError
 
     JWK_CLIENT_AVAILABLE = True
 except ImportError:
     JWK_CLIENT_AVAILABLE = False
 
+ALLOWED_ALGORITHMS = {
+    "HS256",
+    "HS384",
+    "HS512",
+    "RS256",
+    "RS384",
+    "RS512",
+    "ES256",
+    "ES384",
+    "ES512",
+}
 
-class TokenBackend(SimpleJwtTokenBackend):
+
+class TokenBackend:
     def __init__(
         self,
         algorithm,
@@ -31,17 +40,32 @@ class TokenBackend(SimpleJwtTokenBackend):
         leeway: Union[float, int, timedelta] = None,
         json_encoder: Optional[Type[json.JSONEncoder]] = None,
     ):
-        if "4.7" in drf_simplejwt_version:
-            super().__init__(algorithm, signing_key, verifying_key, audience, issuer)
-        else:
-            super().__init__(algorithm, signing_key, verifying_key, audience, issuer, jwk_url, leeway)
+        self._validate_algorithm(algorithm)
+
+        self.algorithm = algorithm
+        self.signing_key = signing_key
+        self.verifying_key = verifying_key
+        self.audience = audience
+        self.issuer = issuer
 
         if JWK_CLIENT_AVAILABLE:
             self.jwks_client = PyJWKClient(jwk_url) if jwk_url else None
         else:
             self.jwks_client = None
 
+        self.leeway = leeway
         self.json_encoder = json_encoder
+
+    def _validate_algorithm(self, algorithm):
+        """
+        Ensure that the nominated algorithm is recognized, and that cryptography is installed for those
+        algorithms that require it
+        """
+        if algorithm not in ALLOWED_ALGORITHMS:
+            raise TokenBackendError(format_lazy(_("Unrecognized algorithm type '{}'"), algorithm))
+
+        if algorithm in algorithms.requires_cryptography and not algorithms.has_crypto:
+            raise TokenBackendError(format_lazy(_("You must have cryptography installed to use {}."), algorithm))
 
     def get_leeway(self) -> timedelta:
         leeway = getattr(self, "leeway", None)
@@ -59,6 +83,18 @@ class TokenBackend(SimpleJwtTokenBackend):
                     type(self.leeway),
                 )
             )
+
+    def get_verifying_key(self, token):
+        if self.algorithm.startswith("HS"):
+            return self.signing_key
+
+        if self.jwks_client:
+            try:
+                return self.jwks_client.get_signing_key_from_jwt(token).key
+            except PyJWKClientError as ex:
+                raise TokenBackendError(_("Token is invalid or expired")) from ex
+
+        return self.verifying_key
 
     def encode(self, payload):
         """
@@ -91,17 +127,6 @@ class TokenBackend(SimpleJwtTokenBackend):
         signature check fails, or if its 'exp' claim indicates it has expired.
         """
         try:
-            if "4.7" in drf_simplejwt_version:
-                return jwt.decode(
-                    token,
-                    self.verifying_key,
-                    algorithms=[self.algorithm],
-                    verify=verify,
-                    audience=self.audience,
-                    issuer=self.issuer,
-                    options={"verify_aud": self.audience is not None, "verify_signature": verify},
-                )
-
             return jwt.decode(
                 token,
                 self.get_verifying_key(token),
