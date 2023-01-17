@@ -29,10 +29,7 @@ class TestTokenObtainSerializer(BaseTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_it_should_not_validate_if_any_fields_missing(self):
         s = TokenObtainSerializer(data={})
@@ -40,29 +37,18 @@ class TestTokenObtainSerializer(BaseTestCase):
         self.assertIn(s.username_field, s.errors)
         self.assertIn("password", s.errors)
 
-        s = TokenObtainSerializer(
-            data={
-                TokenObtainSerializer.username_field: "oieanrst",
-            }
-        )
+        s = TokenObtainSerializer(data={TokenObtainSerializer.username_field: "oieanrst"})
         self.assertFalse(s.is_valid())
         self.assertIn("password", s.errors)
 
-        s = TokenObtainSerializer(
-            data={
-                "password": "oieanrst",
-            }
-        )
+        s = TokenObtainSerializer(data={"password": "oieanrst"})
         self.assertFalse(s.is_valid())
         self.assertIn(s.username_field, s.errors)
 
     def test_it_should_not_validate_if_user_not_found(self):
         s = TokenObtainSerializer(
             context=MagicMock(),
-            data={
-                TokenObtainSerializer.username_field: "missing",
-                "password": "pass",
-            },
+            data={TokenObtainSerializer.username_field: "missing", "password": "pass"},
         )
 
         with self.assertRaises(drf_exceptions.AuthenticationFailed):
@@ -74,10 +60,7 @@ class TestTokenObtainSerializer(BaseTestCase):
 
         s = TokenObtainSerializer(
             context=MagicMock(),
-            data={
-                TokenObtainSerializer.username_field: self.username,
-                "password": self.password,
-            },
+            data={TokenObtainSerializer.username_field: self.username, "password": self.password},
         )
 
         with self.assertRaises(drf_exceptions.AuthenticationFailed):
@@ -89,18 +72,12 @@ class TestTokenObtainSlidingSerializer(BaseTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_it_should_produce_a_json_web_token_when_valid(self):
         s = TokenObtainSlidingSerializer(
             context=MagicMock(),
-            data={
-                TokenObtainSlidingSerializer.username_field: self.username,
-                "password": self.password,
-            },
+            data={TokenObtainSlidingSerializer.username_field: self.username, "password": self.password},
         )
 
         self.assertTrue(s.is_valid())
@@ -117,18 +94,12 @@ class TestTokenObtainPairSerializer(BaseTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_it_should_produce_a_json_web_token_when_valid(self):
         s = TokenObtainPairSerializer(
             context=MagicMock(),
-            data={
-                TokenObtainPairSerializer.username_field: self.username,
-                "password": self.password,
-            },
+            data={TokenObtainPairSerializer.username_field: self.username, "password": self.password},
         )
 
         self.assertTrue(s.is_valid())
@@ -172,10 +143,7 @@ class TestTokenRefreshSlidingSerializer(BaseTestCase):
         with self.assertRaises(TokenError) as e:
             s.is_valid()
 
-        self.assertIn(
-            f"has no '{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim",
-            e.exception.args[0],
-        )
+        self.assertIn(f"has no '{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim", e.exception.args[0])
 
     def test_it_should_raise_token_error_if_token_has_refresh_period_expired(self):
         token = SlidingToken()
@@ -186,10 +154,7 @@ class TestTokenRefreshSlidingSerializer(BaseTestCase):
         with self.assertRaises(TokenError) as e:
             s.is_valid()
 
-        self.assertIn(
-            f"'{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim has expired",
-            e.exception.args[0],
-        )
+        self.assertIn(f"'{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim has expired", e.exception.args[0])
 
     def test_it_should_raise_token_error_if_token_has_wrong_type(self):
         token = SlidingToken()
@@ -299,14 +264,9 @@ class TestTokenRefreshSerializer(BaseTestCase):
         self.assertNotEqual(old_exp, new_refresh["exp"])
 
         self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
-        self.assertEqual(
-            new_refresh["exp"],
-            datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME),
-        )
+        self.assertEqual(new_refresh["exp"], datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME))
 
-    def test_it_should_blacklist_refresh_token_if_tokens_should_be_rotated_and_blacklisted(
-        self,
-    ):
+    def test_it_should_blacklist_refresh_token_if_tokens_should_be_rotated_and_blacklisted(self):
         self.assertEqual(OutstandingToken.objects.count(), 0)
         self.assertEqual(BlacklistedToken.objects.count(), 0)
 
@@ -337,10 +297,7 @@ class TestTokenRefreshSerializer(BaseTestCase):
         self.assertNotEqual(old_exp, new_refresh["exp"])
 
         self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
-        self.assertEqual(
-            new_refresh["exp"],
-            datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME),
-        )
+        self.assertEqual(new_refresh["exp"], datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME))
 
         self.assertEqual(OutstandingToken.objects.count(), 1)
         self.assertEqual(BlacklistedToken.objects.count(), 1)

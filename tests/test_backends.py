@@ -56,7 +56,7 @@ class TestTokenBackend(BaseTestCase):
                 TokenBackend("ES384", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
                 TokenBackend("ES512", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
             )
-            if "5.1" in drf_simplejwt_version
+            if "5.1" in drf_simplejwt_version or "5.2" in drf_simplejwt_version
             else (self.hmac_token_backend, self.rsa_token_backend)
         )
 
@@ -71,7 +71,7 @@ class TestTokenBackend(BaseTestCase):
     def test_init_fails_for_rs_algorithms_when_crypto_not_installed(self):
         test_algorithms = ("RS256", "RS384", "RS512")
 
-        if drf_simplejwt_version in ["5.1.0"]:
+        if "5.1" in drf_simplejwt_version or "5.2" in drf_simplejwt_version:
             test_algorithms += ("ES256",)
 
         for algo in test_algorithms:
@@ -248,12 +248,7 @@ class TestTokenBackend(BaseTestCase):
         self.payload["aud"] = AUDIENCE
         self.payload["iss"] = ISSUER
 
-        token = jwt.encode(
-            self.payload,
-            PRIVATE_KEY_2,
-            algorithm="RS256",
-            headers={"kid": "230498151c214b788dd97f22b85410a5"},
-        )
+        token = jwt.encode(self.payload, PRIVATE_KEY_2, algorithm="RS256", headers={"kid": "230498151c214b788dd97f22b85410a5"})
         # Payload copied
         self.payload["exp"] = datetime_to_epoch(self.payload["exp"])
 
@@ -281,12 +276,7 @@ class TestTokenBackend(BaseTestCase):
         self.payload["aud"] = AUDIENCE
         self.payload["iss"] = ISSUER
 
-        token = jwt.encode(
-            self.payload,
-            PRIVATE_KEY_2,
-            algorithm="RS256",
-            headers={"kid": "230498151c214b788dd97f22b85410a5"},
-        )
+        token = jwt.encode(self.payload, PRIVATE_KEY_2, algorithm="RS256", headers={"kid": "230498151c214b788dd97f22b85410a5"})
 
         mock_jwk_module = mock.MagicMock()
         with patch("rest_framework_simplejwt_mongoengine.backends.PyJWKClient") as mock_jwk_module:

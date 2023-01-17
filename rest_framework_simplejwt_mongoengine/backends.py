@@ -15,17 +15,7 @@ try:
 except ImportError:
     JWK_CLIENT_AVAILABLE = False
 
-ALLOWED_ALGORITHMS = {
-    "HS256",
-    "HS384",
-    "HS512",
-    "RS256",
-    "RS384",
-    "RS512",
-    "ES256",
-    "ES384",
-    "ES512",
-}
+ALLOWED_ALGORITHMS = {"HS256", "HS384", "HS512", "RS256", "RS384", "RS512", "ES256", "ES384", "ES512"}
 
 
 class TokenBackend:
@@ -106,12 +96,7 @@ class TokenBackend:
         if self.issuer is not None:
             jwt_payload["iss"] = self.issuer
 
-        token = jwt.encode(
-            jwt_payload,
-            self.signing_key,
-            algorithm=self.algorithm,
-            json_encoder=self.json_encoder,
-        )
+        token = jwt.encode(jwt_payload, self.signing_key, algorithm=self.algorithm, json_encoder=self.json_encoder)
         if isinstance(token, bytes):
             # For PyJWT <= 1.7.1
             return token.decode("utf-8")

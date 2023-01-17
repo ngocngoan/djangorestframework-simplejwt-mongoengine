@@ -25,10 +25,7 @@ class TestTokenObtainPairView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_fields_missing(self):
         res = self.view_post(data={})
@@ -45,12 +42,7 @@ class TestTokenObtainPairView(APIViewTestCase):
         self.assertIn(User.USERNAME_FIELD, res.data)
 
     def test_credentials_wrong(self):
-        res = self.view_post(
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": "test_user",
-            }
-        )
+        res = self.view_post(data={User.USERNAME_FIELD: self.username, "password": "test_user"})
         self.assertEqual(res.status_code, 401)
         self.assertIn("detail", res.data)
 
@@ -58,22 +50,12 @@ class TestTokenObtainPairView(APIViewTestCase):
         self.user.is_active = False
         self.user.save()
 
-        res = self.view_post(
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": self.password,
-            }
-        )
+        res = self.view_post(data={User.USERNAME_FIELD: self.username, "password": self.password})
         self.assertEqual(res.status_code, 401)
         self.assertIn("detail", res.data)
 
     def test_success(self):
-        res = self.view_post(
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": self.password,
-            }
-        )
+        res = self.view_post(data={User.USERNAME_FIELD: self.username, "password": self.password})
         self.assertEqual(res.status_code, 200)
         self.assertIn("access", res.data)
         self.assertIn("refresh", res.data)
@@ -81,12 +63,7 @@ class TestTokenObtainPairView(APIViewTestCase):
     def test_update_last_login(self):
         with override_api_settings(UPDATE_LAST_LOGIN=True):
             reload(serializers)
-            self.view_post(
-                data={
-                    User.USERNAME_FIELD: self.username,
-                    "password": self.password,
-                }
-            )
+            self.view_post(data={User.USERNAME_FIELD: self.username, "password": self.password})
             user = User.objects.get(username=self.username)
             self.assertIsNotNone(user.last_login)
             self.assertGreaterEqual(timezone.now(), user.last_login)
@@ -101,10 +78,7 @@ class TestTokenRefreshView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_fields_missing(self):
         res = self.view_post(data={})
@@ -152,10 +126,7 @@ class TestTokenObtainSlidingView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_fields_missing(self):
         res = self.view_post(data={})
@@ -172,12 +143,7 @@ class TestTokenObtainSlidingView(APIViewTestCase):
         self.assertIn(User.USERNAME_FIELD, res.data)
 
     def test_credentials_wrong(self):
-        res = self.view_post(
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": "test_user",
-            }
-        )
+        res = self.view_post(data={User.USERNAME_FIELD: self.username, "password": "test_user"})
         self.assertEqual(res.status_code, 401)
         self.assertIn("detail", res.data)
 
@@ -185,22 +151,12 @@ class TestTokenObtainSlidingView(APIViewTestCase):
         self.user.is_active = False
         self.user.save()
 
-        res = self.view_post(
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": self.password,
-            }
-        )
+        res = self.view_post(data={User.USERNAME_FIELD: self.username, "password": self.password})
         self.assertEqual(res.status_code, 401)
         self.assertIn("detail", res.data)
 
     def test_success(self):
-        res = self.view_post(
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": self.password,
-            }
-        )
+        res = self.view_post(data={User.USERNAME_FIELD: self.username, "password": self.password})
         self.assertEqual(res.status_code, 200)
         self.assertIn("token", res.data)
 
@@ -208,12 +164,7 @@ class TestTokenObtainSlidingView(APIViewTestCase):
         # verify last_login is updated
         with override_api_settings(UPDATE_LAST_LOGIN=True):
             reload(serializers)
-            self.view_post(
-                data={
-                    User.USERNAME_FIELD: self.username,
-                    "password": self.password,
-                }
-            )
+            self.view_post(data={User.USERNAME_FIELD: self.username, "password": self.password})
             user = User.objects.get(username=self.username)
             self.assertIsNotNone(user.last_login)
             self.assertGreaterEqual(timezone.now(), user.last_login)
@@ -228,10 +179,7 @@ class TestTokenRefreshSlidingView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_fields_missing(self):
         res = self.view_post(data={})
@@ -273,10 +221,7 @@ class TestTokenRefreshSlidingView(APIViewTestCase):
 
         token = SlidingToken()
         exp = now + api_settings.SLIDING_TOKEN_LIFETIME - timedelta(seconds=1)
-        token.set_exp(
-            from_time=now,
-            lifetime=api_settings.SLIDING_TOKEN_LIFETIME - timedelta(seconds=1),
-        )
+        token.set_exp(from_time=now, lifetime=api_settings.SLIDING_TOKEN_LIFETIME - timedelta(seconds=1))
 
         # View returns 200
         res = self.view_post(data={"token": str(token)})
@@ -296,10 +241,7 @@ class TestTokenVerifyView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_fields_missing(self):
         res = self.view_post(data={})
@@ -345,10 +287,7 @@ if drf_simplejwt_version in ["5.0.0", "5.1.0", "5.2.0", "5.2.1", "5.2.2"]:
             self.username = "test_user"
             self.password = "test_password"
 
-            self.user = User.create_user(
-                username=self.username,
-                password=self.password,
-            )
+            self.user = User.create_user(username=self.username, password=self.password)
 
         def test_fields_missing(self):
             res = self.view_post(data={})
