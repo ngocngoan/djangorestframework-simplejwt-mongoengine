@@ -5,19 +5,11 @@ from unittest.mock import patch
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework.test import APIRequestFactory
-from rest_framework_simplejwt.utils import (
-    aware_utcnow,
-    datetime_from_epoch,
-    datetime_to_epoch,
-)
+from rest_framework_simplejwt.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch
 
 from rest_framework_simplejwt_mongoengine import serializers
 from rest_framework_simplejwt_mongoengine.settings import api_settings
-from rest_framework_simplejwt_mongoengine.tokens import (
-    AccessToken,
-    RefreshToken,
-    SlidingToken,
-)
+from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken
 from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
 from rest_framework_simplejwt_mongoengine.views import TokenViewBase
 
@@ -140,9 +132,7 @@ class TestTokenRefreshView(APIViewTestCase):
         # View returns 200
         now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-        with patch(
-            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-        ) as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
 
             res = self.view_post(data={"refresh": str(refresh)})
@@ -152,9 +142,7 @@ class TestTokenRefreshView(APIViewTestCase):
         access = AccessToken(res.data["access"])
 
         self.assertEqual(refresh["test_claim"], access["test_claim"])
-        self.assertEqual(
-            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
-        )
+        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
 
 
 class TestTokenObtainSlidingView(APIViewTestCase):
@@ -274,9 +262,7 @@ class TestTokenRefreshSlidingView(APIViewTestCase):
 
     def test_it_should_return_401_if_token_has_refresh_period_expired(self):
         token = SlidingToken()
-        token.set_exp(
-            api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(seconds=1)
-        )
+        token.set_exp(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(seconds=1))
 
         res = self.view_post(data={"token": str(token)})
         self.assertEqual(res.status_code, 401)
@@ -350,7 +336,7 @@ class TestTokenVerifyView(APIViewTestCase):
         self.assertEqual(len(res.data), 0)
 
 
-if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
+if drf_simplejwt_version in ["5.0.0", "5.1.0", "5.2.0", "5.2.1", "5.2.2"]:
 
     class TestTokenBlacklistView(APIViewTestCase):
         view_name = "token_blacklist"
@@ -390,9 +376,7 @@ if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
             # View returns 200
             now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            with patch(
-                "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-            ) as fake_aware_utcnow:
+            with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
 
                 res = self.view_post(data={"refresh": str(refresh)})
@@ -408,9 +392,7 @@ if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
             # View returns 200
             now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            with patch(
-                "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-            ) as fake_aware_utcnow:
+            with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
                 fake_aware_utcnow.return_value = now
 
                 res = self.view_post(data={"refresh": str(refresh)})

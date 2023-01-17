@@ -2,18 +2,10 @@ from django.conf import settings
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework.exceptions import ValidationError
-from rest_framework_simplejwt.serializers import (
-    TokenObtainSerializer as SimpleJWTTokenObtainSerializer,
-)
-from rest_framework_simplejwt.serializers import (
-    TokenRefreshSerializer as SimpleJWTTokenRefreshSerializer,
-)
-from rest_framework_simplejwt.serializers import (
-    TokenRefreshSlidingSerializer as SimpleJWTTokenRefreshSlidingSerializer,
-)
-from rest_framework_simplejwt.serializers import (
-    TokenVerifySerializer as SimpleJWTTokenVerifySerializer,
-)
+from rest_framework_simplejwt.serializers import TokenObtainSerializer as SimpleJWTTokenObtainSerializer
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer as SimpleJWTTokenRefreshSerializer
+from rest_framework_simplejwt.serializers import TokenRefreshSlidingSerializer as SimpleJWTTokenRefreshSlidingSerializer
+from rest_framework_simplejwt.serializers import TokenVerifySerializer as SimpleJWTTokenVerifySerializer
 
 from .settings import api_settings
 from .tokens import RefreshToken, SlidingToken, UntypedToken
@@ -113,24 +105,16 @@ class TokenVerifySerializer(SimpleJWTTokenVerifySerializer):
     def validate(self, attrs):
         token = UntypedToken(attrs["token"])
 
-        if (
-            api_settings.BLACKLIST_AFTER_ROTATION
-            and "rest_framework_simplejwt_mongoengine.token_blacklist"
-            in settings.INSTALLED_APPS
-        ):
+        if api_settings.BLACKLIST_AFTER_ROTATION and "rest_framework_simplejwt_mongoengine.token_blacklist" in settings.INSTALLED_APPS:
             jti = token.get(api_settings.JTI_CLAIM)
-            if BlacklistedToken.objects.filter(
-                token__in=OutstandingToken.objects.filter(jti=jti)
-            ).exists():
+            if BlacklistedToken.objects.filter(token__in=OutstandingToken.objects.filter(jti=jti)).exists():
                 raise ValidationError("Token is blacklisted")
 
         return {}
 
 
-if drf_simplejwt_version in ["5.0.0", "5.1.0"]:
-    from rest_framework_simplejwt.serializers import (
-        TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer,
-    )
+if drf_simplejwt_version in ["5.0.0", "5.1.0", "5.2.0", "5.2.1", "5.2.2"]:
+    from rest_framework_simplejwt.serializers import TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer
 
     class TokenBlacklistSerializer(SimpleJWTTokenBlacklistSerializer):
         token_class = RefreshToken
