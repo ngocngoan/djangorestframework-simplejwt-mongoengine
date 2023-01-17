@@ -6,7 +6,7 @@ Getting started
 Requirements
 ------------
 
-* Python (3.8, 3.9, 3.10)
+* Python (3.8, 3.9, 3.10, 3.11)
 * Django (3.2, 4.0)
 * Django REST Framework (3.11, 3.12, 3.13, 3.14)
 * `Django MongoEngine`_ (0.5.4)
