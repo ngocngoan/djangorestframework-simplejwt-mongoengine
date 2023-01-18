@@ -1,7 +1,6 @@
 from datetime import datetime, timedelta
 from unittest.mock import patch
 
-import pytest
 from django_mongoengine.mongo_auth.managers import get_user_document
 from jose import jwt
 
@@ -9,13 +8,7 @@ from rest_framework_simplejwt_mongoengine.exceptions import TokenBackendError, T
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.state import token_backend
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken, Token, UntypedToken
-from rest_framework_simplejwt_mongoengine.utils import (
-    aware_utcnow,
-    datetime_to_epoch,
-    drf_simplejwt_version,
-    make_utc,
-    microseconds_to_milliseconds,
-)
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_to_epoch, make_utc, microseconds_to_milliseconds
 
 from .utils import BaseTestCase, override_api_settings
 
@@ -311,10 +304,6 @@ class TestToken(BaseTestCase):
         with self.assertRaises(TokenError):
             token.check_exp("refresh_exp", current_time=current_time + timedelta(days=2))
 
-    @pytest.mark.skipif(
-        "4.7" in drf_simplejwt_version,
-        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
-    )
     def test_check_token_not_expired_if_in_leeway(self):
         token = MyToken()
         token.set_exp("refresh_exp", lifetime=timedelta(days=1))
@@ -339,10 +328,6 @@ class TestToken(BaseTestCase):
 
         token.token_backend.leeway = 0
 
-    @pytest.mark.skipif(
-        "4.7" in drf_simplejwt_version,
-        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
-    )
     def test_check_token_if_wrong_type_leeway(self):
         token = MyToken()
         token.set_exp("refresh_exp", lifetime=timedelta(days=1))
@@ -356,10 +341,7 @@ class TestToken(BaseTestCase):
 
     def test_for_user(self):
         username = "test_user"
-        user = User.create_user(
-            username=username,
-            password="test_password",
-        )
+        user = User.create_user(username=username, password="test_password")
 
         token = MyToken.for_user(user)
 

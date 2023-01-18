@@ -5,9 +5,6 @@ from datetime import datetime, timezone
 from django.conf import settings
 from django.utils.functional import lazy
 from django.utils.timezone import is_naive, make_aware
-from pkg_resources import get_distribution
-
-drf_simplejwt_version = get_distribution("djangorestframework_simplejwt").version
 
 
 def make_utc(dt):

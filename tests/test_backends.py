@@ -12,7 +12,7 @@ from jwt import algorithms
 
 from rest_framework_simplejwt_mongoengine.backends import JWK_CLIENT_AVAILABLE, TokenBackend
 from rest_framework_simplejwt_mongoengine.exceptions import TokenBackendError
-from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_to_epoch, drf_simplejwt_version, make_utc
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_to_epoch, make_utc
 from tests.keys import ES256_PRIVATE_KEY, ES256_PUBLIC_KEY, PRIVATE_KEY, PRIVATE_KEY_2, PUBLIC_KEY, PUBLIC_KEY_2
 
 from .utils import BaseTestCase
@@ -40,23 +40,16 @@ class UUIDJSONEncoder(JSONEncoder):
 class TestTokenBackend(BaseTestCase):
     def setUp(self):
         self.hmac_token_backend = TokenBackend("HS256", SECRET)
-
-        if "4.7" not in drf_simplejwt_version:
-            self.hmac_leeway_token_backend = TokenBackend("HS256", SECRET, leeway=LEEWAY)
-
+        self.hmac_leeway_token_backend = TokenBackend("HS256", SECRET, leeway=LEEWAY)
         self.rsa_token_backend = TokenBackend("RS256", PRIVATE_KEY, PUBLIC_KEY)
         self.aud_iss_token_backend = TokenBackend("RS256", PRIVATE_KEY, PUBLIC_KEY, AUDIENCE, ISSUER)
         self.payload = {"foo": "bar"}
         self.backends = (
-            (
-                self.hmac_token_backend,
-                self.rsa_token_backend,
-                TokenBackend("ES256", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
-                TokenBackend("ES384", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
-                TokenBackend("ES512", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
-            )
-            if "5.1" in drf_simplejwt_version or "5.2" in drf_simplejwt_version
-            else (self.hmac_token_backend, self.rsa_token_backend)
+            self.hmac_token_backend,
+            self.rsa_token_backend,
+            TokenBackend("ES256", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
+            TokenBackend("ES384", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
+            TokenBackend("ES512", ES256_PRIVATE_KEY, ES256_PUBLIC_KEY),
         )
 
     def test_init(self):
@@ -68,12 +61,7 @@ class TestTokenBackend(BaseTestCase):
 
     @patch.object(algorithms, "has_crypto", new=False)
     def test_init_fails_for_rs_algorithms_when_crypto_not_installed(self):
-        test_algorithms = ("RS256", "RS384", "RS512")
-
-        if "5.1" in drf_simplejwt_version or "5.2" in drf_simplejwt_version:
-            test_algorithms += ("ES256",)
-
-        for algo in test_algorithms:
+        for algo in ("RS256", "RS384", "RS512", "ES256"):
             with self.assertRaisesRegex(TokenBackendError, f"You must have cryptography installed to use {algo}."):
                 TokenBackend(algo, "not_secret")
 
@@ -234,13 +222,7 @@ class TestTokenBackend(BaseTestCase):
 
         self.assertEqual(self.aud_iss_token_backend.decode(token), self.payload)
 
-    @pytest.mark.skipif(
-        # TODO: Uncomment 2 line below when JWK_URL url is reachable
-        # not JWK_CLIENT_AVAILABLE or "4.7" in drf_simplejwt_version,
-        # reason="PyJWT 1.7.1 doesn't have JWK client or Django simplejwt version 4.7.x doesn't have backend PyJWKClient",
-        True,
-        reason=f"URL: {JWK_URL} is not unreachable",
-    )
+    @pytest.mark.skipif(True, reason=f"URL: {JWK_URL} is not unreachable")
     def test_decode_rsa_aud_iss_jwk_success(self):
         self.payload["exp"] = aware_utcnow() + timedelta(days=1)
         self.payload["foo"] = "baz"
@@ -298,18 +280,12 @@ class TestTokenBackend(BaseTestCase):
         pyjwt_without_rsa = PyJWS()
         pyjwt_without_rsa.unregister_algorithm("RS256")
 
-        if drf_simplejwt_version not in ["4.7.0", "4.7.1", "4.7.2", "4.8.0"]:
+        def _decode(jwt, key, algorithms, options, audience, issuer, leeway):
+            return pyjwt_without_rsa.decode(jwt, key, algorithms, options)
 
-            def _decode(jwt, key, algorithms, options, audience, issuer, leeway):
-                return pyjwt_without_rsa.decode(jwt, key, algorithms, options)
-
-            with patch.object(jwt, "decode", new=_decode):
-                with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
-                    self.rsa_token_backend.decode(token)
-        else:
-            with patch.object(jwt, "decode", new=pyjwt_without_rsa.decode):
-                with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
-                    self.rsa_token_backend.decode(token)
+        with patch.object(jwt, "decode", new=_decode):
+            with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
+                self.rsa_token_backend.decode(token)
 
     def test_decode_when_token_algorithm_does_not_match(self):
         token = jwt.encode(self.payload, PRIVATE_KEY, algorithm="RS256")
@@ -319,10 +295,6 @@ class TestTokenBackend(BaseTestCase):
         with self.assertRaisesRegex(TokenBackendError, "Invalid algorithm specified"):
             self.hmac_token_backend.decode(token)
 
-    @pytest.mark.skipif(
-        "4.7" in drf_simplejwt_version,
-        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
-    )
     def test_decode_leeway_hmac_fail(self):
         self.payload["exp"] = datetime_to_epoch(aware_utcnow() - timedelta(seconds=LEEWAY * 2))
 
@@ -331,13 +303,8 @@ class TestTokenBackend(BaseTestCase):
         with self.assertRaises(TokenBackendError):
             self.hmac_leeway_token_backend.decode(expired_token)
 
-    @pytest.mark.skipif(
-        "4.7" in drf_simplejwt_version,
-        reason="Django simplejwt version 4.7.x doesn't have LEEWAY property in token backend",
-    )
     def test_decode_leeway_hmac_success(self):
         self.payload["exp"] = datetime_to_epoch(aware_utcnow() - timedelta(seconds=LEEWAY / 2))
-
         expired_token = jwt.encode(self.payload, SECRET, algorithm="HS256")
 
         self.assertEqual(self.hmac_leeway_token_backend.decode(expired_token), self.payload)
