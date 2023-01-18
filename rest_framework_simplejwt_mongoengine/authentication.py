@@ -1,7 +1,6 @@
 from django.utils.translation import gettext_lazy as _
 from django_mongoengine.mongo_auth.managers import get_user_document
-from rest_framework import HTTP_HEADER_ENCODING
-from rest_framework_simplejwt.authentication import JWTAuthentication as SimpleJWTAuthentication
+from rest_framework import HTTP_HEADER_ENCODING, authentication
 from rest_framework_simplejwt.exceptions import AuthenticationFailed, InvalidToken, TokenError
 
 from .settings import api_settings
@@ -14,7 +13,7 @@ if not isinstance(api_settings.AUTH_HEADER_TYPES, (list, tuple)):
 AUTH_HEADER_TYPE_BYTES = {h.encode(HTTP_HEADER_ENCODING) for h in AUTH_HEADER_TYPES}
 
 
-class JWTAuthentication(SimpleJWTAuthentication):
+class JWTAuthentication(authentication.BaseAuthentication):
     """
     An authentication plugin that authenticates requests through a JSON web
     token provided in a request header.
@@ -41,10 +40,7 @@ class JWTAuthentication(SimpleJWTAuthentication):
         return self.get_user(validated_token), validated_token
 
     def authenticate_header(self, request):
-        return '{} realm="{}"'.format(
-            AUTH_HEADER_TYPES[0],
-            self.www_authenticate_realm,
-        )
+        return f'{AUTH_HEADER_TYPES[0]} realm="{self.www_authenticate_realm}"'
 
     def get_header(self, request):
         """
@@ -113,13 +109,13 @@ class JWTAuthentication(SimpleJWTAuthentication):
         """
         try:
             user_id = validated_token[api_settings.USER_ID_CLAIM]
-        except KeyError:
-            raise InvalidToken(_("Token contained no recognizable user identification"))
+        except KeyError as ex:
+            raise InvalidToken(_("Token contained no recognizable user identification")) from ex
 
         try:
             user = self.user_model.objects.get(**{api_settings.USER_ID_FIELD: user_id})
-        except self.user_model.DoesNotExist:
-            raise AuthenticationFailed(_("User not found"), code="user_not_found")
+        except self.user_model.DoesNotExist as ex:
+            raise AuthenticationFailed(_("User not found"), code="user_not_found") from ex
 
         if not user.is_active:
             raise AuthenticationFailed(_("User is inactive"), code="user_inactive")
