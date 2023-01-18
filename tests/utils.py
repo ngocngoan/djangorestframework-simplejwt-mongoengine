@@ -3,8 +3,8 @@ import contextlib
 from django.test import TestCase
 from mongoengine.connection import get_db
 from rest_framework.test import APIClient
-from rest_framework_simplejwt.compat import reverse
 
+from rest_framework_simplejwt_mongoengine.compat import reverse
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 
 
@@ -19,7 +19,7 @@ def client_action_wrapper(action):
 
         url = reverse(self.view_name, args=reverse_args, kwargs=reverse_kwargs)
         if query_string is not None:
-            url = url + "?{0}".format(query_string)
+            url = url + f"?{query_string}"
 
         return getattr(self.client, action)(url, *args, **kwargs)
 
@@ -46,7 +46,7 @@ class APIViewTestCase(BaseTestCase):
         """
         Authenticates requests with the given token.
         """
-        self.client.credentials(HTTP_AUTHORIZATION="{} {}".format(type, token))
+        self.client.credentials(HTTP_AUTHORIZATION=f"{type} {token}")
 
     view_name = None
 

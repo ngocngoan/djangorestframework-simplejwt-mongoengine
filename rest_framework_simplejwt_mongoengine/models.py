@@ -1,6 +1,6 @@
 from django.utils.functional import cached_property
-from rest_framework_simplejwt.compat import CallableFalse, CallableTrue
 
+from .compat import CallableFalse, CallableTrue
 from .settings import api_settings
 
 

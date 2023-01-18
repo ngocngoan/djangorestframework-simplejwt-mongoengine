@@ -1,8 +1,8 @@
 from datetime import timedelta
 
 from django_mongoengine.mongo_auth.managers import get_user_document
-from rest_framework_simplejwt.compat import reverse
 
+from rest_framework_simplejwt_mongoengine.compat import reverse
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken
 
@@ -18,10 +18,7 @@ class TestTestView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(
-            username=self.username,
-            password=self.password,
-        )
+        self.user = User.create_user(username=self.username, password=self.password)
 
     def test_no_authorization(self):
         res = self.view_get()
@@ -32,10 +29,7 @@ class TestTestView(APIViewTestCase):
     def test_wrong_auth_type(self):
         res = self.client.post(
             reverse("token_obtain_sliding"),
-            data={
-                User.USERNAME_FIELD: self.username,
-                "password": self.password,
-            },
+            data={User.USERNAME_FIELD: self.username, "password": self.password},
         )
 
         token = res.data["token"]
@@ -107,10 +101,7 @@ class TestTestView(APIViewTestCase):
         self.assertEqual(res.status_code, 200)
         self.assertEqual(res.data["foo"], "bar")
 
-        res = self.client.post(
-            reverse("token_refresh"),
-            data={"refresh": refresh},
-        )
+        res = self.client.post(reverse("token_refresh"), data={"refresh": refresh})
 
         access = res.data["access"]
 
