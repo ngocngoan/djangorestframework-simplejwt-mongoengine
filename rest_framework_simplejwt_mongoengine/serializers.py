@@ -1,11 +1,10 @@
 from django.conf import settings
+from django.contrib.auth import authenticate
 from django.utils import timezone
+from django.utils.translation import gettext_lazy as _
 from django_mongoengine.mongo_auth.managers import get_user_document
+from rest_framework import exceptions, serializers
 from rest_framework.exceptions import ValidationError
-from rest_framework_simplejwt.serializers import TokenObtainSerializer as SimpleJWTTokenObtainSerializer
-from rest_framework_simplejwt.serializers import TokenRefreshSerializer as SimpleJWTTokenRefreshSerializer
-from rest_framework_simplejwt.serializers import TokenRefreshSlidingSerializer as SimpleJWTTokenRefreshSlidingSerializer
-from rest_framework_simplejwt.serializers import TokenVerifySerializer as SimpleJWTTokenVerifySerializer
 
 from .settings import api_settings
 from .tokens import RefreshToken, SlidingToken, UntypedToken
@@ -15,9 +14,44 @@ if api_settings.BLACKLIST_AFTER_ROTATION:
     from .token_blacklist.models import BlacklistedToken, OutstandingToken
 
 
-class TokenObtainSerializer(SimpleJWTTokenObtainSerializer):
+class PasswordField(serializers.CharField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("style", {})
+
+        kwargs["style"]["input_type"] = "password"
+        kwargs["write_only"] = True
+
+        super().__init__(*args, **kwargs)
+
+
+class TokenObtainSerializer(serializers.Serializer):
     username_field = get_user_document().USERNAME_FIELD
     token_class = None
+
+    default_error_messages = {"no_active_account": _("No active account found with the given credentials")}
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+
+        self.fields[self.username_field] = serializers.CharField()
+        self.fields["password"] = PasswordField()
+
+    def validate(self, attrs):
+        authenticate_kwargs = {self.username_field: attrs[self.username_field], "password": attrs["password"]}
+        try:
+            authenticate_kwargs["request"] = self.context["request"]
+        except KeyError:
+            pass
+
+        self.user = authenticate(**authenticate_kwargs)
+
+        if not api_settings.USER_AUTHENTICATION_RULE(self.user):
+            raise exceptions.AuthenticationFailed(
+                self.error_messages["no_active_account"],
+                "no_active_account",
+            )
+
+        return {}
 
     @classmethod
     def get_token(cls, user):
@@ -59,7 +93,9 @@ class TokenObtainSlidingSerializer(TokenObtainSerializer):
         return data
 
 
-class TokenRefreshSerializer(SimpleJWTTokenRefreshSerializer):
+class TokenRefreshSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    access = serializers.CharField(read_only=True)
     token_class = RefreshToken
 
     def validate(self, attrs):
@@ -85,7 +121,8 @@ class TokenRefreshSerializer(SimpleJWTTokenRefreshSerializer):
         return data
 
 
-class TokenRefreshSlidingSerializer(SimpleJWTTokenRefreshSlidingSerializer):
+class TokenRefreshSlidingSerializer(serializers.Serializer):
+    token = serializers.CharField()
     token_class = SlidingToken
 
     def validate(self, attrs):
@@ -95,13 +132,16 @@ class TokenRefreshSlidingSerializer(SimpleJWTTokenRefreshSlidingSerializer):
         # passed
         token.check_exp(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM)
 
-        # Update the "exp" claim
+        # Update the "exp" and "iat" claims
         token.set_exp()
+        token.set_iat()
 
         return {"token": str(token)}
 
 
-class TokenVerifySerializer(SimpleJWTTokenVerifySerializer):
+class TokenVerifySerializer(serializers.Serializer):
+    token = serializers.CharField()
+
     def validate(self, attrs):
         token = UntypedToken(attrs["token"])
 
