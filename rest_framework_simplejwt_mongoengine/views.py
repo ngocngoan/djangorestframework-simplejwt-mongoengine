@@ -106,7 +106,7 @@ token_verify = TokenVerifyView.as_view()
 class TokenBlacklistView(TokenViewBase):
     """
     Takes a token and blacklists it. Must be used with the
-    `rest_framework_simplejwt.token_blacklist` app installed.
+    `rest_framework_simplejwt_mongoengine.token_blacklist` app installed.
     """
 
     _serializer_class = api_settings.TOKEN_BLACKLIST_SERIALIZER

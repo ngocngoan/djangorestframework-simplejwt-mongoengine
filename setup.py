@@ -9,7 +9,6 @@ from setuptools import find_packages, setup
 requirements = [
     "django>=3.2,<4.1",
     "djangorestframework>=3.11",
-    "djangorestframework-simplejwt>=4.7,<5.3",
     "django-mongoengine>=0.5.4",
     "pyjwt>=1.7.1,<3",
 ]

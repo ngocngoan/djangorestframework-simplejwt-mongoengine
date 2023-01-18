@@ -392,7 +392,7 @@ class TestTokenBlacklistSerializer(BaseTestCase):
 
         now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-        with patch("rest_framework_simplejwt.tokens.aware_utcnow") as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
             self.assertTrue(s.is_valid())
 
@@ -413,7 +413,7 @@ class TestTokenBlacklistSerializer(BaseTestCase):
 
         now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-        with patch("rest_framework_simplejwt.tokens.aware_utcnow") as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = now
             self.assertTrue(ser.is_valid())
 

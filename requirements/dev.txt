@@ -1,5 +1,4 @@
 django>=3.2,<4.1
 djangorestframework>=3.11
-djangorestframework-simplejwt>=4.7,<6.0
 mongoengine>=0.20.0
 django-mongoengine>=0.5
