@@ -1,8 +1,16 @@
 import math
+
+from django.utils.functional import lazy
 from pkg_resources import get_distribution
 
-
 drf_simplejwt_version = get_distribution("djangorestframework_simplejwt").version
+
+
+def format_lazy(s, *args, **kwargs):
+    return s.format(*args, **kwargs)
+
+
+format_lazy = lazy(format_lazy, str)
 
 
 def microseconds_to_milliseconds(date_time):
