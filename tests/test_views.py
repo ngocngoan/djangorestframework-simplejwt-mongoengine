@@ -5,12 +5,11 @@ from unittest.mock import patch
 from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework.test import APIRequestFactory
-from rest_framework_simplejwt.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch
 
 from rest_framework_simplejwt_mongoengine import serializers
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken
-from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, drf_simplejwt_version
 from rest_framework_simplejwt_mongoengine.views import TokenViewBase
 
 from .utils import APIViewTestCase, override_api_settings

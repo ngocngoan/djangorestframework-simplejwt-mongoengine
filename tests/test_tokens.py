@@ -5,12 +5,17 @@ import pytest
 from django_mongoengine.mongo_auth.managers import get_user_document
 from jose import jwt
 from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
-from rest_framework_simplejwt.utils import aware_utcnow, datetime_to_epoch, make_utc
 
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.state import token_backend
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken, Token, UntypedToken
-from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version, microseconds_to_milliseconds
+from rest_framework_simplejwt_mongoengine.utils import (
+    aware_utcnow,
+    datetime_to_epoch,
+    drf_simplejwt_version,
+    make_utc,
+    microseconds_to_milliseconds,
+)
 
 from .utils import BaseTestCase, override_api_settings
 

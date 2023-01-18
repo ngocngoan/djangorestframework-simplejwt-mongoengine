@@ -6,13 +6,10 @@ from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
 from rest_framework_simplejwt.tokens import Token as SimpleJWTToken
-from rest_framework_simplejwt.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, format_lazy
-
-from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
 
 from .settings import api_settings
 from .token_blacklist.models import BlacklistedToken, OutstandingToken
-from .utils import microseconds_to_milliseconds
+from .utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, drf_simplejwt_version, format_lazy, microseconds_to_milliseconds
 
 
 class Token(SimpleJWTToken):

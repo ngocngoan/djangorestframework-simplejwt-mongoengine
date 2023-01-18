@@ -3,18 +3,11 @@ from unittest.mock import patch
 from django.core.management import call_command
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework_simplejwt.exceptions import TokenError
-from rest_framework_simplejwt.utils import aware_utcnow, datetime_from_epoch
 
 from rest_framework_simplejwt_mongoengine.settings import api_settings
-from rest_framework_simplejwt_mongoengine.token_blacklist.models import (
-    BlacklistedToken,
-    OutstandingToken,
-)
-from rest_framework_simplejwt_mongoengine.tokens import (
-    AccessToken,
-    RefreshToken,
-    SlidingToken,
-)
+from rest_framework_simplejwt_mongoengine.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_from_epoch
 
 from .utils import BaseTestCase
 
@@ -39,9 +32,7 @@ class TestTokenBlacklist(BaseTestCase):
         self.assertEqual(outstanding_token.jti, token["jti"])
         self.assertEqual(outstanding_token.token, str(token))
         self.assertEqual(outstanding_token.created_at, token.current_time)
-        self.assertEqual(
-            outstanding_token.expires_at, datetime_from_epoch(token["exp"])
-        )
+        self.assertEqual(outstanding_token.expires_at, datetime_from_epoch(token["exp"]))
 
     def test_refresh_tokens_are_added_to_outstanding_list(self):
         token = RefreshToken.for_user(self.user)
@@ -54,9 +45,7 @@ class TestTokenBlacklist(BaseTestCase):
         self.assertEqual(outstanding_token.jti, token["jti"])
         self.assertEqual(outstanding_token.token, str(token))
         self.assertEqual(outstanding_token.created_at, token.current_time)
-        self.assertEqual(
-            outstanding_token.expires_at, datetime_from_epoch(token["exp"])
-        )
+        self.assertEqual(outstanding_token.expires_at, datetime_from_epoch(token["exp"]))
 
     def test_access_tokens_are_not_added_to_outstanding_list(self):
         AccessToken.for_user(self.user)
@@ -135,9 +124,7 @@ class TestTokenBlacklistFlushExpiredTokens(BaseTestCase):
         # Make tokens with fake exp time that will expire soon
         fake_now = aware_utcnow() - api_settings.REFRESH_TOKEN_LIFETIME
 
-        with patch(
-            "rest_framework_simplejwt_mongoengine.tokens.aware_utcnow"
-        ) as fake_aware_utcnow:
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
             fake_aware_utcnow.return_value = fake_now
             expired_1 = RefreshToken.for_user(self.user)
             expired_2 = RefreshToken()

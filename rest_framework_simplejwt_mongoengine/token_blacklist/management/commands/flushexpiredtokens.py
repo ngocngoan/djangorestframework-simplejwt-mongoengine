@@ -1,7 +1,6 @@
 from django.core.management.base import BaseCommand
-from rest_framework_simplejwt.utils import aware_utcnow
 
-from rest_framework_simplejwt_mongoengine.utils import microseconds_to_milliseconds
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, microseconds_to_milliseconds
 
 from ...models import OutstandingToken
 
