@@ -6,6 +6,7 @@ from rest_framework import exceptions as drf_exceptions
 from rest_framework_simplejwt.exceptions import TokenError
 
 from rest_framework_simplejwt_mongoengine.serializers import (
+    TokenBlacklistSerializer,
     TokenObtainPairSerializer,
     TokenObtainSerializer,
     TokenObtainSlidingSerializer,
@@ -16,13 +17,7 @@ from rest_framework_simplejwt_mongoengine.serializers import (
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken
-from rest_framework_simplejwt_mongoengine.utils import (
-    aware_utcnow,
-    datetime_from_epoch,
-    datetime_to_epoch,
-    drf_simplejwt_version,
-    microseconds_to_milliseconds,
-)
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, microseconds_to_milliseconds
 
 from .utils import BaseTestCase, override_api_settings
 
@@ -356,77 +351,74 @@ class TestTokenVerifySerializer(BaseTestCase):
         self.assertEqual(len(s.validated_data), 0)
 
 
-if drf_simplejwt_version in ["5.0.0", "5.1.0", "5.2.0", "5.2.1", "5.2.2"]:
-    from rest_framework_simplejwt_mongoengine.serializers import TokenBlacklistSerializer
+class TestTokenBlacklistSerializer(BaseTestCase):
+    def test_it_should_raise_token_error_if_token_invalid(self):
+        token = RefreshToken()
+        del token["exp"]
 
-    class TestTokenBlacklistSerializer(BaseTestCase):
-        def test_it_should_raise_token_error_if_token_invalid(self):
-            token = RefreshToken()
-            del token["exp"]
+        s = TokenBlacklistSerializer(data={"refresh": str(token)})
 
-            s = TokenBlacklistSerializer(data={"refresh": str(token)})
+        with self.assertRaises(TokenError) as e:
+            s.is_valid()
 
-            with self.assertRaises(TokenError) as e:
-                s.is_valid()
+        self.assertIn("has no 'exp' claim", e.exception.args[0])
 
-            self.assertIn("has no 'exp' claim", e.exception.args[0])
+        token.set_exp(lifetime=-timedelta(days=1))
 
-            token.set_exp(lifetime=-timedelta(days=1))
+        s = TokenBlacklistSerializer(data={"refresh": str(token)})
 
-            s = TokenBlacklistSerializer(data={"refresh": str(token)})
+        with self.assertRaises(TokenError) as e:
+            s.is_valid()
 
-            with self.assertRaises(TokenError) as e:
-                s.is_valid()
+        self.assertIn("invalid or expired", e.exception.args[0])
 
-            self.assertIn("invalid or expired", e.exception.args[0])
+    def test_it_should_raise_token_error_if_token_has_wrong_type(self):
+        token = RefreshToken()
+        token[api_settings.TOKEN_TYPE_CLAIM] = "wrong_type"
 
-        def test_it_should_raise_token_error_if_token_has_wrong_type(self):
-            token = RefreshToken()
-            token[api_settings.TOKEN_TYPE_CLAIM] = "wrong_type"
+        s = TokenBlacklistSerializer(data={"refresh": str(token)})
 
-            s = TokenBlacklistSerializer(data={"refresh": str(token)})
+        with self.assertRaises(TokenError) as e:
+            s.is_valid()
 
-            with self.assertRaises(TokenError) as e:
-                s.is_valid()
+        self.assertIn("wrong type", e.exception.args[0])
 
-            self.assertIn("wrong type", e.exception.args[0])
+    def test_it_should_return_nothing_if_everything_ok(self):
+        refresh = RefreshToken()
+        refresh["test_claim"] = "arst"
 
-        def test_it_should_return_nothing_if_everything_ok(self):
-            refresh = RefreshToken()
-            refresh["test_claim"] = "arst"
+        # Serializer validates
+        s = TokenBlacklistSerializer(data={"refresh": str(refresh)})
 
-            # Serializer validates
-            s = TokenBlacklistSerializer(data={"refresh": str(refresh)})
+        now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        with patch("rest_framework_simplejwt.tokens.aware_utcnow") as fake_aware_utcnow:
+            fake_aware_utcnow.return_value = now
+            self.assertTrue(s.is_valid())
 
-            with patch("rest_framework_simplejwt.tokens.aware_utcnow") as fake_aware_utcnow:
-                fake_aware_utcnow.return_value = now
-                self.assertTrue(s.is_valid())
+        self.assertDictEqual(s.validated_data, {})
 
-            self.assertDictEqual(s.validated_data, {})
+    def test_it_should_blacklist_refresh_token_if_everything_ok(self):
+        self.assertEqual(OutstandingToken.objects.count(), 0)
+        self.assertEqual(BlacklistedToken.objects.count(), 0)
 
-        def test_it_should_blacklist_refresh_token_if_everything_ok(self):
-            self.assertEqual(OutstandingToken.objects.count(), 0)
-            self.assertEqual(BlacklistedToken.objects.count(), 0)
+        refresh = RefreshToken()
 
-            refresh = RefreshToken()
+        refresh["test_claim"] = "arst"
 
-            refresh["test_claim"] = "arst"
+        old_jti = refresh["jti"]
 
-            old_jti = refresh["jti"]
+        # Serializer validates
+        ser = TokenBlacklistSerializer(data={"refresh": str(refresh)})
 
-            # Serializer validates
-            ser = TokenBlacklistSerializer(data={"refresh": str(refresh)})
+        now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-            now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        with patch("rest_framework_simplejwt.tokens.aware_utcnow") as fake_aware_utcnow:
+            fake_aware_utcnow.return_value = now
+            self.assertTrue(ser.is_valid())
 
-            with patch("rest_framework_simplejwt.tokens.aware_utcnow") as fake_aware_utcnow:
-                fake_aware_utcnow.return_value = now
-                self.assertTrue(ser.is_valid())
+        self.assertEqual(OutstandingToken.objects.count(), 1)
+        self.assertEqual(BlacklistedToken.objects.count(), 1)
 
-            self.assertEqual(OutstandingToken.objects.count(), 1)
-            self.assertEqual(BlacklistedToken.objects.count(), 1)
-
-            # Assert old refresh token is blacklisted
-            self.assertEqual(BlacklistedToken.objects.first().token.jti, old_jti)
+        # Assert old refresh token is blacklisted
+        self.assertEqual(BlacklistedToken.objects.first().token.jti, old_jti)

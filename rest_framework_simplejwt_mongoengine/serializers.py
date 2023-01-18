@@ -8,7 +8,6 @@ from rest_framework.exceptions import ValidationError
 
 from .settings import api_settings
 from .tokens import RefreshToken, SlidingToken, UntypedToken
-from .utils import drf_simplejwt_version
 
 if api_settings.BLACKLIST_AFTER_ROTATION:
     from .token_blacklist.models import BlacklistedToken, OutstandingToken
@@ -153,16 +152,14 @@ class TokenVerifySerializer(serializers.Serializer):
         return {}
 
 
-if drf_simplejwt_version in ["5.0.0", "5.1.0", "5.2.0", "5.2.1", "5.2.2"]:
-    from rest_framework_simplejwt.serializers import TokenBlacklistSerializer as SimpleJWTTokenBlacklistSerializer
+class TokenBlacklistSerializer(serializers.Serializer):
+    refresh = serializers.CharField()
+    token_class = RefreshToken
 
-    class TokenBlacklistSerializer(SimpleJWTTokenBlacklistSerializer):
-        token_class = RefreshToken
-
-        def validate(self, attrs):
-            refresh = self.token_class(attrs["refresh"])
-            try:
-                refresh.blacklist()
-            except AttributeError:
-                pass
-            return {}
+    def validate(self, attrs):
+        refresh = self.token_class(attrs["refresh"])
+        try:
+            refresh.blacklist()
+        except AttributeError:
+            pass
+        return {}
