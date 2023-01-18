@@ -5,14 +5,21 @@ from django.conf import settings
 from django.utils.module_loading import import_string
 from django.utils.translation import gettext_lazy as _
 from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
-from rest_framework_simplejwt.tokens import Token as SimpleJWTToken
 
 from .settings import api_settings
 from .token_blacklist.models import BlacklistedToken, OutstandingToken
-from .utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, drf_simplejwt_version, format_lazy, microseconds_to_milliseconds
+from .utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, format_lazy, microseconds_to_milliseconds
 
 
-class Token(SimpleJWTToken):
+class Token:
+    """
+    A class which validates and wraps an existing JWT or can be used to build a
+    new JWT.
+    """
+
+    token_type = None
+    lifetime = None
+
     def __init__(self, token=None, verify=True):
         """
         !!!! IMPORTANT !!!! MUST raise a TokenError with a user-facing error
@@ -33,8 +40,8 @@ class Token(SimpleJWTToken):
             # Decode token
             try:
                 self.payload = token_backend.decode(token, verify=verify)
-            except TokenBackendError:
-                raise TokenError(_("Token is invalid or expired"))
+            except TokenBackendError as ex:
+                raise TokenError(_("Token is invalid or expired")) from ex
 
             if verify:
                 self.verify()
@@ -92,7 +99,6 @@ class Token(SimpleJWTToken):
             raise TokenError(_("Token has no id"))
 
         if api_settings.TOKEN_TYPE_CLAIM is not None:
-
             self.verify_token_type()
 
     def verify_token_type(self):
@@ -159,16 +165,10 @@ class Token(SimpleJWTToken):
         except KeyError as ex:
             raise TokenError(format_lazy(_("Token has no '{}' claim"), claim)) from ex
 
-        has_error = False
         claim_time = datetime_from_epoch(claim_value)
+        leeway = self.get_token_backend().get_leeway()
 
-        if "4.7" in drf_simplejwt_version:
-            has_error = claim_time <= current_time
-        else:
-            leeway = self.get_token_backend().get_leeway()
-            has_error = claim_time <= current_time - leeway
-
-        if has_error:
+        if claim_time <= current_time - leeway:
             raise TokenError(format_lazy(_("Token '{}' claim has expired"), claim))
 
     @classmethod
