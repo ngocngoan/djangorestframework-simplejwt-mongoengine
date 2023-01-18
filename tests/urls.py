@@ -1,7 +1,6 @@
 from django.urls import re_path
 
 from rest_framework_simplejwt_mongoengine import views as jwt_views
-from rest_framework_simplejwt_mongoengine.utils import drf_simplejwt_version
 
 from . import views
 
@@ -12,9 +11,5 @@ urlpatterns = [
     re_path(r"^token/sliding/refresh/$", jwt_views.token_refresh_sliding, name="token_refresh_sliding"),
     re_path(r"^token/verify/$", jwt_views.token_verify, name="token_verify"),
     re_path(r"^test-view/$", views.test_view, name="test_view"),
+    re_path(r"^token/blacklist/$", jwt_views.token_blacklist, name="token_blacklist"),
 ]
-
-if drf_simplejwt_version in ["5.0.0", "5.1.0", "5.2.0", "5.2.1", "5.2.2"]:
-    urlpatterns += [
-        re_path(r"^token/blacklist/$", jwt_views.token_blacklist, name="token_blacklist"),
-    ]
