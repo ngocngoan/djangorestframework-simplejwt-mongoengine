@@ -1,9 +1,9 @@
 from django.utils.module_loading import import_string
 from rest_framework import generics, status
 from rest_framework.response import Response
-from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
 from .authentication import AUTH_HEADER_TYPES
+from .exceptions import InvalidToken, TokenError
 from .settings import api_settings
 
 

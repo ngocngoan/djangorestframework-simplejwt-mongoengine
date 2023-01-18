@@ -3,8 +3,8 @@ from unittest.mock import MagicMock, patch
 
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework import exceptions as drf_exceptions
-from rest_framework_simplejwt.exceptions import TokenError
 
+from rest_framework_simplejwt_mongoengine.exceptions import TokenError
 from rest_framework_simplejwt_mongoengine.serializers import (
     TokenBlacklistSerializer,
     TokenObtainPairSerializer,

@@ -5,8 +5,8 @@ from typing import Optional, Type, Union
 import jwt
 from django.utils.translation import gettext_lazy as _
 from jwt import InvalidAlgorithmError, InvalidTokenError, algorithms
-from rest_framework_simplejwt.exceptions import TokenBackendError
 
+from .exceptions import TokenBackendError
 from .utils import format_lazy
 
 try:

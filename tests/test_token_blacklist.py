@@ -2,8 +2,8 @@ from unittest.mock import patch
 
 from django.core.management import call_command
 from django_mongoengine.mongo_auth.managers import get_user_document
-from rest_framework_simplejwt.exceptions import TokenError
 
+from rest_framework_simplejwt_mongoengine.exceptions import TokenError
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.token_blacklist.models import BlacklistedToken, OutstandingToken
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken

@@ -4,8 +4,8 @@ from unittest.mock import patch
 import pytest
 from django_mongoengine.mongo_auth.managers import get_user_document
 from jose import jwt
-from rest_framework_simplejwt.exceptions import TokenBackendError, TokenError
 
+from rest_framework_simplejwt_mongoengine.exceptions import TokenBackendError, TokenError
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.state import token_backend
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken, Token, UntypedToken
