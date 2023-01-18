@@ -1,11 +1,20 @@
 from django.utils.module_loading import import_string
-from rest_framework_simplejwt.views import TokenViewBase as SimpleJWTTokenViewBase
+from rest_framework import generics, status
+from rest_framework.response import Response
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
+from .authentication import AUTH_HEADER_TYPES
 from .settings import api_settings
 
 
-class TokenViewBase(SimpleJWTTokenViewBase):
+class TokenViewBase(generics.GenericAPIView):
+    permission_classes = ()
+    authentication_classes = ()
+
+    serializer_class = None
     _serializer_class = ""
+
+    www_authenticate_realm = "api"
 
     def get_serializer_class(self):
         """
@@ -19,6 +28,19 @@ class TokenViewBase(SimpleJWTTokenViewBase):
         except ImportError:
             msg = "Could not import serializer '%s'" % self._serializer_class
             raise ImportError(msg)
+
+    def get_authenticate_header(self, request):
+        return f'{AUTH_HEADER_TYPES[0]} realm="{self.www_authenticate_realm}"'
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+
+        try:
+            serializer.is_valid(raise_exception=True)
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
+
+        return Response(serializer.validated_data, status=status.HTTP_200_OK)
 
 
 class TokenObtainPairView(TokenViewBase):
