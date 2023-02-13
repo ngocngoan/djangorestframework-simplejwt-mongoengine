@@ -10,5 +10,5 @@ twine==4.0.2
 
 pytest==7.2.1
 
-cryptography==39.0.0
+cryptography==39.0.1
 python-jose==3.3.0
