@@ -36,14 +36,14 @@ Some of Simple JWT MongoEngine's behavior can be customized through settings var
 
         "AUTH_TOKEN_CLASSES": ("rest_framework_simplejwt_mongoengine.tokens.AccessToken",),
         "TOKEN_TYPE_CLAIM": "token_type",
-        
-        "JTI_CLAIM": "jti",
-
         "TOKEN_USER_CLASS": "rest_framework_simplejwt_mongoengine.models.TokenUser",
+
+        "JTI_CLAIM": "jti",
 
         "SLIDING_TOKEN_REFRESH_EXP_CLAIM": "refresh_exp",
         "SLIDING_TOKEN_LIFETIME": timedelta(minutes=5),
         "SLIDING_TOKEN_REFRESH_LIFETIME": timedelta(days=1),
+        
         "TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenObtainPairSerializer",
         "TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenRefreshSerializer",
         "TOKEN_VERIFY_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenVerifySerializer",
