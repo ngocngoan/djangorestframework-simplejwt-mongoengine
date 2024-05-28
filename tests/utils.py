@@ -1,10 +1,10 @@
 import contextlib
 
 from django.test import TestCase
+from django.urls import reverse
 from mongoengine.connection import get_db
 from rest_framework.test import APIClient
 
-from rest_framework_simplejwt_mongoengine.compat import reverse
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 
 

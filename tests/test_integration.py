@@ -1,8 +1,8 @@
 from datetime import timedelta
 
+from django.urls import reverse
 from django_mongoengine.mongo_auth.managers import get_user_document
 
-from rest_framework_simplejwt_mongoengine.compat import reverse
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken
 
