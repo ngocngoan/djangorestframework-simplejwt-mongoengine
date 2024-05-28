@@ -7,15 +7,52 @@ from pathlib import Path
 from setuptools import find_packages, setup
 
 requirements = [
-    "django>=3.2,<4.1",
-    "djangorestframework>=3.11",
+    "django>=3.2,<4.3",
+    "djangorestframework>=3.12",
     "django-mongoengine>=0.5.4",
     "pyjwt>=1.7.1,<3",
 ]
 
-test_requirements = [
-    "pytest>=3",
-]
+extras_require = {
+    "test": [
+        "cryptography",
+        "coverage",
+        "freezegun",
+        "psutil",
+        "python-jose",
+        "pytest-cov",
+        "pytest-django",
+        "pytest-xdist",
+        "pytest",
+        "tox",
+    ],
+    "lint": [
+        "flake8",
+        "pep8",
+        "isort",
+    ],
+    "doc": [
+        "Sphinx>=7",
+        "sphinx_rtd_theme>=2.0.0",
+    ],
+    "dev": [
+        "pytest-watch",
+        "wheel",
+        "twine",
+        "ipython",
+    ],
+    "python-jose": [
+        "python-jose==3.3.0",
+    ],
+}
+
+extras_require["dev"] = (
+    extras_require["dev"]
+    + extras_require["test"]
+    + extras_require["lint"]
+    + extras_require["doc"]
+    + extras_require["python-jose"]
+)
 
 setup(
     author="Đỗ Ngọc Ngoạn (aka Ngoan Do)",
@@ -26,7 +63,8 @@ setup(
         "Environment :: Web Environment",
         "Framework :: Django",
         "Framework :: Django :: 3.2",
-        "Framework :: Django :: 4.0",
+        "Framework :: Django :: 4.1",
+        "Framework :: Django :: 4.2",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
         "Natural Language :: English",
@@ -41,8 +79,10 @@ setup(
     description="Simple JWT is a JSON Web Token authentication plugin for the Django REST Framework which to be compatible with MongoEngine.",  # noqa: E501
     long_description=Path("README.rst").read_text(encoding="utf-8"),
     install_requires=requirements,
+    extras_require=extras_require,
     license="GNU General Public License v3",
     include_package_data=True,
+    zip_safe=False,
     keywords="djangorestframework_simplejwt_mongoengine",
     name="djangorestframework_simplejwt_mongoengine",
     packages=find_packages(
@@ -52,8 +92,6 @@ setup(
         ]
     ),
     test_suite="tests",
-    tests_require=test_requirements,
     url="https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine",
     version="1.2.1",
-    zip_safe=False,
 )

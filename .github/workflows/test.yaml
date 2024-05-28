@@ -23,10 +23,10 @@ jobs:
       max-parallel: 5
       matrix:
         python-version: ['3.8', '3.9', '3.10', '3.11']
-        django-version: ['3.2', '4.0']
-        drf-version: ['3.11', '3.12', '3.13', '3.14']
+        django-version: ['4.1', '4.2']
+        drf-version: ['3.14', '3.15']
         # mongoengine-version: ['0.22', '0.23', '0.24']
-        django-mongoengine-version: ['0.5.4']
+        django-mongoengine-version: ['0.5.6']
         pyjwt-version: ['1.7.1', '2']
 
     steps:
