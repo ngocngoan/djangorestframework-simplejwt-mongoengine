@@ -1,4 +1,5 @@
 import math
+import hashlib
 from calendar import timegm
 from datetime import datetime, timezone
 from typing import Callable
@@ -6,6 +7,13 @@ from typing import Callable
 from django.conf import settings
 from django.utils.functional import lazy
 from django.utils.timezone import is_naive, make_aware
+
+
+def get_md5_hash_password(password: str) -> str:
+    """
+    Returns MD5 hash of the given password
+    """
+    return hashlib.md5(password.encode()).hexdigest().upper()
 
 
 def make_utc(dt: datetime) -> datetime:
