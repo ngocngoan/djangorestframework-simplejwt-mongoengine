@@ -1,5 +1,4 @@
 from datetime import datetime, timedelta, timezone
-from unittest.mock import patch
 
 from django.test import TestCase
 from freezegun import freeze_time
@@ -43,21 +42,41 @@ class TestAwareUtcnow(TestCase):
 class TestDatetimeToEpoch(TestCase):
     def test_it_should_return_the_correct_values(self):
         self.assertEqual(datetime_to_epoch(datetime(year=1970, month=1, day=1)), 0)
-        self.assertEqual(datetime_to_epoch(datetime(year=1970, month=1, day=1, second=1)), 1)
-        self.assertEqual(datetime_to_epoch(datetime(year=2000, month=1, day=1)), 946684800)
+        self.assertEqual(
+            datetime_to_epoch(datetime(year=1970, month=1, day=1, second=1)), 1
+        )
+        self.assertEqual(
+            datetime_to_epoch(datetime(year=2000, month=1, day=1)), 946684800
+        )
 
 
 class TestDatetimeFromEpoch(TestCase):
     def test_it_should_return_the_correct_values(self):
         with self.settings(USE_TZ=False):
-            self.assertEqual(datetime_from_epoch(0), datetime(year=1970, month=1, day=1))
-            self.assertEqual(datetime_from_epoch(1), datetime(year=1970, month=1, day=1, second=1))
-            self.assertEqual(datetime_from_epoch(946684800), datetime(year=2000, month=1, day=1), 946684800)
+            self.assertEqual(
+                datetime_from_epoch(0), datetime(year=1970, month=1, day=1)
+            )
+            self.assertEqual(
+                datetime_from_epoch(1), datetime(year=1970, month=1, day=1, second=1)
+            )
+            self.assertEqual(
+                datetime_from_epoch(946684800),
+                datetime(year=2000, month=1, day=1),
+                946684800,
+            )
 
         with self.settings(USE_TZ=True):
-            self.assertEqual(datetime_from_epoch(0), make_utc(datetime(year=1970, month=1, day=1)))
-            self.assertEqual(datetime_from_epoch(1), make_utc(datetime(year=1970, month=1, day=1, second=1)))
-            self.assertEqual(datetime_from_epoch(946684800), make_utc(datetime(year=2000, month=1, day=1)))
+            self.assertEqual(
+                datetime_from_epoch(0), make_utc(datetime(year=1970, month=1, day=1))
+            )
+            self.assertEqual(
+                datetime_from_epoch(1),
+                make_utc(datetime(year=1970, month=1, day=1, second=1)),
+            )
+            self.assertEqual(
+                datetime_from_epoch(946684800),
+                make_utc(datetime(year=2000, month=1, day=1)),
+            )
 
 
 class TestFormatLazy(TestCase):
