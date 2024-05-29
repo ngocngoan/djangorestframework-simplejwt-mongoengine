@@ -3,7 +3,7 @@ include CONTRIBUTING.rst
 include HISTORY.rst
 include LICENSE
 include README.rst
-
+include rest_framework_simplejwt_mongoengine/py.typed
 recursive-include rest_framework_simplejwt_mongoengine/locale *.mo
 recursive-include rest_framework_simplejwt_mongoengine/locale *.po
 
