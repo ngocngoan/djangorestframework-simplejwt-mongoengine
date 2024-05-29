@@ -40,7 +40,7 @@ class TokenObtainSerializer(serializers.Serializer):
     def __init__(self, *args, **kwargs) -> None:
         super().__init__(*args, **kwargs)
 
-        self.fields[self.username_field] = serializers.CharField()
+        self.fields[self.username_field] = serializers.CharField(write_only=True)
         self.fields["password"] = PasswordField()
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[Any, Any]:
@@ -151,7 +151,7 @@ class TokenRefreshSlidingSerializer(serializers.Serializer):
 
 
 class TokenVerifySerializer(serializers.Serializer):
-    token = serializers.CharField()
+    token = serializers.CharField(write_only=True)
 
     def validate(self, attrs: Dict[str, None]) -> Dict[Any, Any]:
         token = UntypedToken(attrs["token"])
@@ -168,7 +168,7 @@ class TokenVerifySerializer(serializers.Serializer):
 
 
 class TokenBlacklistSerializer(serializers.Serializer):
-    refresh = serializers.CharField()
+    refresh = serializers.CharField(write_only=True)
     token_class = RefreshToken
 
     def validate(self, attrs: Dict[str, Any]) -> Dict[Any, Any]:
