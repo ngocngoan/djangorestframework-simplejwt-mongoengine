@@ -1,4 +1,5 @@
 from datetime import timedelta
+from typing import Any, Dict
 
 from django.conf import settings
 from django.test.signals import setting_changed
@@ -59,14 +60,16 @@ REMOVED_SETTINGS = (
 
 
 class APISettings(_APISettings):  # pragma: no cover
-    def __check_user_settings(self, user_settings):
+    def __check_user_settings(self, user_settings: Dict[str, Any]) -> Dict[str, Any]:
         SETTINGS_DOC = "https://djangorestframework-simplejwt-mongoengine.readthedocs.io/en/latest/settings.html"
 
         for setting in REMOVED_SETTINGS:
             if setting in user_settings:
                 raise RuntimeError(
                     format_lazy(
-                        _("The '{}' setting has been removed. Please refer to '{}' for available settings."),
+                        _(
+                            "The '{}' setting has been removed. Please refer to '{}' for available settings."
+                        ),
                         setting,
                         SETTINGS_DOC,
                     )
@@ -78,7 +81,7 @@ class APISettings(_APISettings):  # pragma: no cover
 api_settings = APISettings(USER_SETTINGS, DEFAULTS, IMPORT_STRINGS)
 
 
-def reload_api_settings(*args, **kwargs):  # pragma: no cover
+def reload_api_settings(*args, **kwargs) -> None:  # pragma: no cover
     global api_settings
 
     setting, value = kwargs["setting"], kwargs["value"]

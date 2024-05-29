@@ -1,6 +1,8 @@
 from django.utils.module_loading import import_string
 from rest_framework import generics, status
+from rest_framework.request import Request
 from rest_framework.response import Response
+from rest_framework.serializers import Serializer
 
 from .authentication import AUTH_HEADER_TYPES
 from .exceptions import InvalidToken, TokenError
@@ -16,7 +18,7 @@ class TokenViewBase(generics.GenericAPIView):
 
     www_authenticate_realm = "api"
 
-    def get_serializer_class(self):
+    def get_serializer_class(self) -> Serializer:
         """
         If serializer_class is set, use it directly. Otherwise get the class from settings.
         """
@@ -25,20 +27,23 @@ class TokenViewBase(generics.GenericAPIView):
             return self.serializer_class
         try:
             return import_string(self._serializer_class)
-        except ImportError as ex:
+        except ImportError:
             msg = "Could not import serializer '%s'" % self._serializer_class
-            raise ImportError(msg) from ex
+            raise ImportError(msg)
 
-    def get_authenticate_header(self, request):
-        return f'{AUTH_HEADER_TYPES[0]} realm="{self.www_authenticate_realm}"'
+    def get_authenticate_header(self, request: Request) -> str:
+        return '{} realm="{}"'.format(
+            AUTH_HEADER_TYPES[0],
+            self.www_authenticate_realm,
+        )
 
-    def post(self, request, *args, **kwargs):
+    def post(self, request: Request, *args, **kwargs) -> Response:
         serializer = self.get_serializer(data=request.data)
 
         try:
             serializer.is_valid(raise_exception=True)
-        except TokenError as ex:
-            raise InvalidToken(ex.args[0]) from ex
+        except TokenError as e:
+            raise InvalidToken(e.args[0])
 
         return Response(serializer.validated_data, status=status.HTTP_200_OK)
 

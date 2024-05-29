@@ -35,7 +35,7 @@ class OutstandingToken(document.Document):
         )
         ordering = ("user",)
 
-    def __str__(self):
+    def __str__(self) -> str:
         return "Token for {} ({})".format(
             self.user,
             self.jti,
@@ -66,5 +66,5 @@ class BlacklistedToken(document.Document):
             not in settings.INSTALLED_APPS
         )
 
-    def __str__(self):
+    def __str__(self) -> str:
         return f"Blacklisted token for {self.token.user}"
