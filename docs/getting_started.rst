@@ -7,14 +7,12 @@ Requirements
 ------------
 
 * Python (3.8, 3.9, 3.10, 3.11)
-* Django (3.2, 4.0)
-* Django REST Framework (3.11, 3.12, 3.13, 3.14)
-* `Django MongoEngine`_ (0.5.4)
-* `Simple JWT`_ (4.7, 4.8, 5.0, 5.1, 5.2)
+* Django (3.2, 4.1, 4.2)
+* Django REST Framework (3.11, 3.12, 3.13, 3.14, 3.15)
+* `Django MongoEngine`_ (0.5.4, 0.5.5, 0.5.6)
 
 .. _MongoEngine: https://mongoengine-odm.readthedocs.io
 .. _Django MongoEngine: https://github.com/MongoEngine/django-mongoengine
-.. _Simple JWT: https://django-rest-framework-simplejwt.readthedocs.io
 
 
 Installation
