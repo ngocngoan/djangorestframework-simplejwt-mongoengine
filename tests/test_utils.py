@@ -3,13 +3,7 @@ from datetime import datetime, timedelta, timezone
 from django.test import TestCase
 from freezegun import freeze_time
 
-from rest_framework_simplejwt_mongoengine.utils import (
-    aware_utcnow,
-    datetime_from_epoch,
-    datetime_to_epoch,
-    format_lazy,
-    make_utc,
-)
+from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, format_lazy, make_utc
 
 
 class TestMakeUtc(TestCase):

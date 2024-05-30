@@ -16,7 +16,14 @@ from jwt import algorithms
 from rest_framework_simplejwt_mongoengine.backends import JWK_CLIENT_AVAILABLE, TokenBackend
 from rest_framework_simplejwt_mongoengine.exceptions import TokenBackendError
 from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_to_epoch, make_utc
-from tests.keys import ES256_PRIVATE_KEY, ES256_PUBLIC_KEY, PRIVATE_KEY, PRIVATE_KEY_2, PUBLIC_KEY, PUBLIC_KEY_2
+from tests.keys import (
+    ES256_PRIVATE_KEY,
+    ES256_PUBLIC_KEY,
+    PRIVATE_KEY,
+    PRIVATE_KEY_2,
+    PUBLIC_KEY,
+    PUBLIC_KEY_2,
+)
 
 SECRET = "not_secret"
 

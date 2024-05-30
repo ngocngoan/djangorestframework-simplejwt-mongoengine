@@ -77,6 +77,9 @@ def pytest_configure():
             "tests",
         ),
         PASSWORD_HASHERS=("django.contrib.auth.hashers.MD5PasswordHasher",),
+        SIMPLE_JWT_MONGOENGINE={
+            "BLACKLIST_AFTER_ROTATION": True,
+        },
         TIME_ZONE="UTC",
         LANGUAGE_CODE="en-us",
         USE_TZ=True,

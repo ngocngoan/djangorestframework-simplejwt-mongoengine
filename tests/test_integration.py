@@ -2,6 +2,7 @@ from datetime import timedelta
 
 from django.urls import reverse
 from django_mongoengine.mongo_auth.managers import get_user_document
+from rest_framework.status import HTTP_200_OK, HTTP_401_UNAUTHORIZED
 
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken
@@ -18,18 +19,24 @@ class TestTestView(APIViewTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(username=self.username, password=self.password)
+        self.user = User.create_user(
+            username=self.username,
+            password=self.password,
+        )
 
     def test_no_authorization(self):
         res = self.view_get()
 
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, HTTP_401_UNAUTHORIZED)
         self.assertIn("credentials were not provided", res.data["detail"])
 
     def test_wrong_auth_type(self):
         res = self.client.post(
             reverse("token_obtain_sliding"),
-            data={User.USERNAME_FIELD: self.username, "password": self.password},
+            data={
+                User.USERNAME_FIELD: self.username,
+                "password": self.password,
+            },
         )
 
         token = res.data["token"]
@@ -37,9 +44,12 @@ class TestTestView(APIViewTestCase):
 
         res = self.view_get()
 
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, HTTP_401_UNAUTHORIZED)
         self.assertIn("credentials were not provided", res.data["detail"])
 
+    @override_api_settings(
+        AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.AccessToken",),
+    )
     def test_expired_token(self):
         old_lifetime = AccessToken.lifetime
         AccessToken.lifetime = timedelta(seconds=0)
@@ -57,12 +67,14 @@ class TestTestView(APIViewTestCase):
         access = res.data["access"]
         self.authenticate_with_token(api_settings.AUTH_HEADER_TYPES[0], access)
 
-        with override_api_settings(AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.AccessToken",)):
-            res = self.view_get()
+        res = self.view_get()
 
-        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.status_code, HTTP_401_UNAUTHORIZED)
         self.assertEqual("token_not_valid", res.data["code"])
 
+    @override_api_settings(
+        AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.SlidingToken",),
+    )
     def test_user_can_get_sliding_token_and_use_it(self):
         res = self.client.post(
             reverse("token_obtain_sliding"),
@@ -75,12 +87,14 @@ class TestTestView(APIViewTestCase):
         token = res.data["token"]
         self.authenticate_with_token(api_settings.AUTH_HEADER_TYPES[0], token)
 
-        with override_api_settings(AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.SlidingToken",)):
-            res = self.view_get()
+        res = self.view_get()
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, HTTP_200_OK)
         self.assertEqual(res.data["foo"], "bar")
 
+    @override_api_settings(
+        AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.AccessToken",),
+    )
     def test_user_can_get_access_and_refresh_tokens_and_use_them(self):
         res = self.client.post(
             reverse("token_obtain_pair"),
@@ -95,20 +109,21 @@ class TestTestView(APIViewTestCase):
 
         self.authenticate_with_token(api_settings.AUTH_HEADER_TYPES[0], access)
 
-        with override_api_settings(AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.AccessToken",)):
-            res = self.view_get()
+        res = self.view_get()
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, HTTP_200_OK)
         self.assertEqual(res.data["foo"], "bar")
 
-        res = self.client.post(reverse("token_refresh"), data={"refresh": refresh})
+        res = self.client.post(
+            reverse("token_refresh"),
+            data={"refresh": refresh},
+        )
 
         access = res.data["access"]
 
         self.authenticate_with_token(api_settings.AUTH_HEADER_TYPES[0], access)
 
-        with override_api_settings(AUTH_TOKEN_CLASSES=("rest_framework_simplejwt_mongoengine.tokens.AccessToken",)):
-            res = self.view_get()
+        res = self.view_get()
 
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, HTTP_200_OK)
         self.assertEqual(res.data["foo"], "bar")
