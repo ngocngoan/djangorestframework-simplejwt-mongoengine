@@ -1,11 +1,11 @@
 rest\_framework\_simplejwt\_mongoengine package
-==================================
+===============================================
 
 Submodules
 ----------
 
 rest\_framework\_simplejwt\_mongoengine.authentication module
-------------------------------------------------
+-------------------------------------------------------------
 
 .. automodule:: rest_framework_simplejwt_mongoengine.authentication
     :members:
@@ -13,7 +13,7 @@ rest\_framework\_simplejwt\_mongoengine.authentication module
     :show-inheritance:
 
 rest\_framework\_simplejwt\_mongoengine.models module
-----------------------------------------
+-----------------------------------------------------
 
 .. automodule:: rest_framework_simplejwt_mongoengine.models
     :members:
@@ -21,7 +21,7 @@ rest\_framework\_simplejwt\_mongoengine.models module
     :show-inheritance:
 
 rest\_framework\_simplejwt\_mongoengine.serializers module
----------------------------------------------
+----------------------------------------------------------
 
 .. automodule:: rest_framework_simplejwt_mongoengine.serializers
     :members:
@@ -29,7 +29,7 @@ rest\_framework\_simplejwt\_mongoengine.serializers module
     :show-inheritance:
 
 rest\_framework\_simplejwt\_mongoengine.tokens module
-----------------------------------------
+-----------------------------------------------------
 
 .. automodule:: rest_framework_simplejwt_mongoengine.tokens
     :members:
@@ -37,7 +37,7 @@ rest\_framework\_simplejwt\_mongoengine.tokens module
     :show-inheritance:
 
 rest\_framework\_simplejwt\_mongoengine.utils module
----------------------------------------
+----------------------------------------------------
 
 .. automodule:: rest_framework_simplejwt_mongoengine.utils
     :members:
@@ -45,7 +45,7 @@ rest\_framework\_simplejwt\_mongoengine.utils module
     :show-inheritance:
 
 rest\_framework\_simplejwt\_mongoengine.views module
----------------------------------------
+----------------------------------------------------
 
 .. automodule:: rest_framework_simplejwt_mongoengine.views
     :members:
@@ -56,7 +56,7 @@ rest\_framework\_simplejwt\_mongoengine.views module
 Module contents
 ---------------
 
-.. automodule:: rest_framework_simplejwt
+.. automodule:: rest_framework_simplejwt_mongoengine
     :members:
     :undoc-members:
     :show-inheritance:
