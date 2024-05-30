@@ -1,5 +1,8 @@
 from datetime import timedelta
+from importlib import reload
 from unittest.mock import MagicMock, patch
+
+from django.conf import settings
 
 from django_mongoengine.mongo_auth.managers import get_user_document
 from rest_framework import exceptions as drf_exceptions
@@ -15,9 +18,17 @@ from rest_framework_simplejwt_mongoengine.serializers import (
     TokenVerifySerializer,
 )
 from rest_framework_simplejwt_mongoengine.settings import api_settings
-from rest_framework_simplejwt_mongoengine.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt_mongoengine.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken
-from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_from_epoch, datetime_to_epoch, microseconds_to_milliseconds
+from rest_framework_simplejwt_mongoengine.utils import (
+    aware_utcnow,
+    datetime_from_epoch,
+    datetime_to_epoch,
+    microseconds_to_milliseconds,
+)
 
 from .utils import BaseTestCase, override_api_settings
 
@@ -29,7 +40,10 @@ class TestTokenObtainSerializer(BaseTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(username=self.username, password=self.password)
+        self.user = User.create_user(
+            username=self.username,
+            password=self.password,
+        )
 
     def test_it_should_not_validate_if_any_fields_missing(self):
         s = TokenObtainSerializer(data={})
@@ -37,22 +51,44 @@ class TestTokenObtainSerializer(BaseTestCase):
         self.assertIn(s.username_field, s.errors)
         self.assertIn("password", s.errors)
 
-        s = TokenObtainSerializer(data={TokenObtainSerializer.username_field: "oieanrst"})
+        s = TokenObtainSerializer(
+            data={
+                TokenObtainSerializer.username_field: "oieanrst",
+            }
+        )
         self.assertFalse(s.is_valid())
         self.assertIn("password", s.errors)
 
-        s = TokenObtainSerializer(data={"password": "oieanrst"})
+        s = TokenObtainSerializer(
+            data={
+                "password": "oieanrst",
+            }
+        )
         self.assertFalse(s.is_valid())
         self.assertIn(s.username_field, s.errors)
 
     def test_it_should_not_validate_if_user_not_found(self):
         s = TokenObtainSerializer(
             context=MagicMock(),
-            data={TokenObtainSerializer.username_field: "missing", "password": "pass"},
+            data={
+                TokenObtainSerializer.username_field: "missing",
+                "password": "pass",
+            },
         )
 
         with self.assertRaises(drf_exceptions.AuthenticationFailed):
             s.is_valid()
+
+    def test_it_should_pass_validate_if_request_not_in_context(self):
+        s = TokenObtainSerializer(
+            context={},
+            data={
+                "username": self.username,
+                "password": self.password,
+            },
+        )
+
+        s.is_valid()
 
     def test_it_should_raise_if_user_not_active(self):
         self.user.is_active = False
@@ -60,7 +96,10 @@ class TestTokenObtainSerializer(BaseTestCase):
 
         s = TokenObtainSerializer(
             context=MagicMock(),
-            data={TokenObtainSerializer.username_field: self.username, "password": self.password},
+            data={
+                TokenObtainSerializer.username_field: self.username,
+                "password": self.password,
+            },
         )
 
         with self.assertRaises(drf_exceptions.AuthenticationFailed):
@@ -72,12 +111,18 @@ class TestTokenObtainSlidingSerializer(BaseTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(username=self.username, password=self.password)
+        self.user = User.create_user(
+            username=self.username,
+            password=self.password,
+        )
 
     def test_it_should_produce_a_json_web_token_when_valid(self):
         s = TokenObtainSlidingSerializer(
             context=MagicMock(),
-            data={TokenObtainSlidingSerializer.username_field: self.username, "password": self.password},
+            data={
+                TokenObtainSlidingSerializer.username_field: self.username,
+                "password": self.password,
+            },
         )
 
         self.assertTrue(s.is_valid())
@@ -94,12 +139,18 @@ class TestTokenObtainPairSerializer(BaseTestCase):
         self.username = "test_user"
         self.password = "test_password"
 
-        self.user = User.create_user(username=self.username, password=self.password)
+        self.user = User.create_user(
+            username=self.username,
+            password=self.password,
+        )
 
     def test_it_should_produce_a_json_web_token_when_valid(self):
         s = TokenObtainPairSerializer(
             context=MagicMock(),
-            data={TokenObtainPairSerializer.username_field: self.username, "password": self.password},
+            data={
+                TokenObtainPairSerializer.username_field: self.username,
+                "password": self.password,
+            },
         )
 
         self.assertTrue(s.is_valid())
@@ -143,18 +194,28 @@ class TestTokenRefreshSlidingSerializer(BaseTestCase):
         with self.assertRaises(TokenError) as e:
             s.is_valid()
 
-        self.assertIn(f"has no '{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim", e.exception.args[0])
+        self.assertIn(
+            f"has no '{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim",
+            e.exception.args[0],
+        )
 
     def test_it_should_raise_token_error_if_token_has_refresh_period_expired(self):
         token = SlidingToken()
-        token.set_exp(api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(days=1))
+        token.set_exp(
+            api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM, lifetime=-timedelta(days=1)
+        )
 
         s = TokenRefreshSlidingSerializer(data={"token": str(token)})
 
         with self.assertRaises(TokenError) as e:
             s.is_valid()
 
-        self.assertIn(f"'{api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM}' claim has expired", e.exception.args[0])
+        self.assertIn(
+            "'{}' claim has expired".format(
+                api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM
+            ),
+            e.exception.args[0],
+        )
 
     def test_it_should_raise_token_error_if_token_has_wrong_type(self):
         token = SlidingToken()
@@ -234,8 +295,14 @@ class TestTokenRefreshSerializer(BaseTestCase):
         access = AccessToken(s.validated_data["access"])
 
         self.assertEqual(refresh["test_claim"], access["test_claim"])
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
 
+    @override_api_settings(
+        ROTATE_REFRESH_TOKENS=True,
+        BLACKLIST_AFTER_ROTATION=False,
+    )
     def test_it_should_return_refresh_token_if_tokens_should_be_rotated(self):
         refresh = RefreshToken()
 
@@ -247,12 +314,11 @@ class TestTokenRefreshSerializer(BaseTestCase):
         # Serializer validates
         ser = TokenRefreshSerializer(data={"refresh": str(refresh)})
 
-        now = microseconds_to_milliseconds(aware_utcnow()) - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-        with override_api_settings(ROTATE_REFRESH_TOKENS=True, BLACKLIST_AFTER_ROTATION=False):
-            with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
-                fake_aware_utcnow.return_value = now
-                self.assertTrue(ser.is_valid())
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+            fake_aware_utcnow.return_value = now
+            self.assertTrue(ser.is_valid())
 
         access = AccessToken(ser.validated_data["access"])
         new_refresh = RefreshToken(ser.validated_data["refresh"])
@@ -263,10 +329,21 @@ class TestTokenRefreshSerializer(BaseTestCase):
         self.assertNotEqual(old_jti, new_refresh["jti"])
         self.assertNotEqual(old_exp, new_refresh["exp"])
 
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
-        self.assertEqual(new_refresh["exp"], datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
+        self.assertEqual(
+            new_refresh["exp"],
+            datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME),
+        )
 
-    def test_it_should_blacklist_refresh_token_if_tokens_should_be_rotated_and_blacklisted(self):
+    @override_api_settings(
+        ROTATE_REFRESH_TOKENS=True,
+        BLACKLIST_AFTER_ROTATION=True,
+    )
+    def test_it_should_blacklist_refresh_token_if_tokens_should_be_rotated_and_blacklisted(
+        self,
+    ):
         self.assertEqual(OutstandingToken.objects.count(), 0)
         self.assertEqual(BlacklistedToken.objects.count(), 0)
 
@@ -280,12 +357,11 @@ class TestTokenRefreshSerializer(BaseTestCase):
         # Serializer validates
         ser = TokenRefreshSerializer(data={"refresh": str(refresh)})
 
-        now = microseconds_to_milliseconds(aware_utcnow()) - api_settings.ACCESS_TOKEN_LIFETIME / 2
+        now = aware_utcnow() - api_settings.ACCESS_TOKEN_LIFETIME / 2
 
-        with override_api_settings(ROTATE_REFRESH_TOKENS=True, BLACKLIST_AFTER_ROTATION=True):
-            with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
-                fake_aware_utcnow.return_value = now
-                self.assertTrue(ser.is_valid())
+        with patch("rest_framework_simplejwt_mongoengine.tokens.aware_utcnow") as fake_aware_utcnow:
+            fake_aware_utcnow.return_value = now
+            self.assertTrue(ser.is_valid())
 
         access = AccessToken(ser.validated_data["access"])
         new_refresh = RefreshToken(ser.validated_data["refresh"])
@@ -296,14 +372,45 @@ class TestTokenRefreshSerializer(BaseTestCase):
         self.assertNotEqual(old_jti, new_refresh["jti"])
         self.assertNotEqual(old_exp, new_refresh["exp"])
 
-        self.assertEqual(access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME))
-        self.assertEqual(new_refresh["exp"], datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME))
+        self.assertEqual(
+            access["exp"], datetime_to_epoch(now + api_settings.ACCESS_TOKEN_LIFETIME)
+        )
+        self.assertEqual(
+            new_refresh["exp"],
+            datetime_to_epoch(now + api_settings.REFRESH_TOKEN_LIFETIME),
+        )
 
         self.assertEqual(OutstandingToken.objects.count(), 1)
         self.assertEqual(BlacklistedToken.objects.count(), 1)
 
         # Assert old refresh token is blacklisted
         self.assertEqual(BlacklistedToken.objects.first().token.jti, old_jti)
+
+    @override_api_settings(
+        ROTATE_REFRESH_TOKENS=True,
+        BLACKLIST_AFTER_ROTATION=True,
+    )
+    def test_blacklist_app_not_installed_should_pass(self):
+        from rest_framework_simplejwt_mongoengine import serializers, tokens
+
+        # Remove blacklist app
+        new_apps = list(settings.INSTALLED_APPS)
+        new_apps.remove("rest_framework_simplejwt_mongoengine.token_blacklist")
+
+        with self.settings(INSTALLED_APPS=tuple(new_apps)):
+            # Reload module that blacklist app not installed
+            reload(tokens)
+            reload(serializers)
+
+            refresh = tokens.RefreshToken()
+
+            # Serializer validates
+            ser = serializers.TokenRefreshSerializer(data={"refresh": str(refresh)})
+            ser.validate({"refresh": str(refresh)})
+
+        # Restore origin module without mock
+        reload(tokens)
+        reload(serializers)
 
 
 class TestTokenVerifySerializer(BaseTestCase):
@@ -422,3 +529,25 @@ class TestTokenBlacklistSerializer(BaseTestCase):
 
         # Assert old refresh token is blacklisted
         self.assertEqual(BlacklistedToken.objects.first().token.jti, old_jti)
+
+    def test_blacklist_app_not_installed_should_pass(self):
+        from rest_framework_simplejwt_mongoengine import serializers, tokens
+
+        # Remove blacklist app
+        new_apps = list(settings.INSTALLED_APPS)
+        new_apps.remove("rest_framework_simplejwt_mongoengine.token_blacklist")
+
+        with self.settings(INSTALLED_APPS=tuple(new_apps)):
+            # Reload module that blacklist app not installed
+            reload(tokens)
+            reload(serializers)
+
+            refresh = tokens.RefreshToken()
+
+            # Serializer validates
+            ser = serializers.TokenBlacklistSerializer(data={"refresh": str(refresh)})
+            ser.validate({"refresh": str(refresh)})
+
+        # Restore origin module without mock
+        reload(tokens)
+        reload(serializers)

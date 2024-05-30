@@ -1,11 +1,16 @@
+from importlib import reload
 from unittest.mock import patch
 
 from django.core.management import call_command
+from django.utils import timezone
 from django_mongoengine.mongo_auth.managers import get_user_document
 
 from rest_framework_simplejwt_mongoengine.exceptions import TokenError
 from rest_framework_simplejwt_mongoengine.settings import api_settings
-from rest_framework_simplejwt_mongoengine.token_blacklist.models import BlacklistedToken, OutstandingToken
+from rest_framework_simplejwt_mongoengine.token_blacklist.models import (
+    BlacklistedToken,
+    OutstandingToken,
+)
 from rest_framework_simplejwt_mongoengine.tokens import AccessToken, RefreshToken, SlidingToken
 from rest_framework_simplejwt_mongoengine.utils import aware_utcnow, datetime_from_epoch
 
@@ -21,6 +26,19 @@ class TestTokenBlacklist(BaseTestCase):
             password="test_password",
         )
 
+    def test_token_blacklist_old_django(self):
+        with patch("django.VERSION", (3, 1)):
+            # Import package mock blacklist old django
+            import rest_framework_simplejwt_mongoengine.token_blacklist.__init__ as blacklist
+
+            self.assertEqual(
+                blacklist.default_app_config,
+                ("rest_framework_simplejwt_mongoengine.token_blacklist.apps.TokenBlacklistConfig"),
+            )
+
+        # Restore origin module without mock
+        reload(blacklist)
+
     def test_sliding_tokens_are_added_to_outstanding_list(self):
         token = SlidingToken.for_user(self.user)
 
@@ -32,7 +50,9 @@ class TestTokenBlacklist(BaseTestCase):
         self.assertEqual(outstanding_token.jti, token["jti"])
         self.assertEqual(outstanding_token.token, str(token))
         self.assertEqual(outstanding_token.created_at, token.current_time)
-        self.assertEqual(outstanding_token.expires_at, datetime_from_epoch(token["exp"]))
+        self.assertEqual(
+            outstanding_token.expires_at, datetime_from_epoch(token["exp"])
+        )
 
     def test_refresh_tokens_are_added_to_outstanding_list(self):
         token = RefreshToken.for_user(self.user)
@@ -45,7 +65,9 @@ class TestTokenBlacklist(BaseTestCase):
         self.assertEqual(outstanding_token.jti, token["jti"])
         self.assertEqual(outstanding_token.token, str(token))
         self.assertEqual(outstanding_token.created_at, token.current_time)
-        self.assertEqual(outstanding_token.expires_at, datetime_from_epoch(token["exp"]))
+        self.assertEqual(
+            outstanding_token.expires_at, datetime_from_epoch(token["exp"])
+        )
 
     def test_access_tokens_are_not_added_to_outstanding_list(self):
         AccessToken.for_user(self.user)
@@ -102,6 +124,23 @@ class TestTokenBlacklist(BaseTestCase):
         self.assertEqual(blacklisted_token.token.jti, new_token["jti"])
 
         self.assertEqual(OutstandingToken.objects.count(), 2)
+
+    def test_outstanding_token_and_blacklisted_token_expected_str(self):
+        outstanding = OutstandingToken.objects.create(
+            user=self.user,
+            jti="abc",
+            token="xyz",
+            expires_at=timezone.now(),
+        )
+        blacklisted = BlacklistedToken.objects.create(token=outstanding)
+
+        expected_outstanding_str = "Token for {} ({})".format(
+            outstanding.user, outstanding.jti
+        )
+        expected_blacklisted_str = f"Blacklisted token for {blacklisted.token.user}"
+
+        self.assertEqual(str(outstanding), expected_outstanding_str)
+        self.assertEqual(str(blacklisted), expected_blacklisted_str)
 
 
 class TestTokenBlacklistFlushExpiredTokens(BaseTestCase):

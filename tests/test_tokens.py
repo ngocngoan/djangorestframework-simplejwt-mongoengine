@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+from importlib import reload
 from unittest.mock import patch
 
 from django_mongoengine.mongo_auth.managers import get_user_document
@@ -23,6 +24,26 @@ class MyToken(Token):
 class TestToken(BaseTestCase):
     def setUp(self):
         self.token = MyToken()
+
+    @classmethod
+    def setUpTestData(cls):
+        cls.username = "test_user"
+        cls.user = User.create_user(
+            username=cls.username,
+            password="test_password",
+        )
+
+    def test_type_checking(self):
+        from rest_framework_simplejwt_mongoengine import tokens
+
+        with patch("typing.TYPE_CHECKING", True):
+            # Reload tokens, mock type checking
+            reload(tokens)
+
+            self.assertEqual(tokens.TYPE_CHECKING, True)
+
+        # Restore origin module without mock
+        reload(tokens)
 
     def test_init_no_token_type_or_lifetime(self):
         class MyTestToken(Token):
@@ -175,8 +196,8 @@ class TestToken(BaseTestCase):
         self.assertIn(
             encoded_token,
             (
-                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk0NjY4NDgwMH0.VKoOnMgmETawjDZwxrQaHG0xHdo6xBodFy6FXJzTVxs",  # noqa: E501
-                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk0NjY4NDgwMH0.iqxxOHV63sjeqNR1GDxX3LPvMymfVB76sOIDqTbjAgk",  # noqa: E501
+                "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9.eyJleHAiOjk0NjY4NDgwMH0.VKoOnMgmETawjDZwxrQaHG0xHdo6xBodFy6FXJzTVxs",
+                "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjk0NjY4NDgwMH0.iqxxOHV63sjeqNR1GDxX3LPvMymfVB76sOIDqTbjAgk",
             ),
         )
 
@@ -218,14 +239,14 @@ class TestToken(BaseTestCase):
         self.assertIn("jti", token)
         self.assertNotEqual(old_jti, token["jti"])
 
+    @override_api_settings(JTI_CLAIM=None)
     def test_optional_jti(self):
-        with override_api_settings(JTI_CLAIM=None):
-            token = MyToken()
+        token = MyToken()
         self.assertNotIn("jti", token)
 
+    @override_api_settings(TOKEN_TYPE_CLAIM=None)
     def test_optional_type_token(self):
-        with override_api_settings(TOKEN_TYPE_CLAIM=None):
-            token = MyToken()
+        token = MyToken()
         self.assertNotIn("type", token)
 
     def test_set_exp(self):
@@ -242,7 +263,9 @@ class TestToken(BaseTestCase):
         # Should allow overriding of beginning time, lifetime, and claim name
         token.set_exp(claim="refresh_exp", from_time=now, lifetime=timedelta(days=1))
         self.assertIn("refresh_exp", token)
-        self.assertEqual(token["refresh_exp"], datetime_to_epoch(now + timedelta(days=1)))
+        self.assertEqual(
+            token["refresh_exp"], datetime_to_epoch(now + timedelta(days=1))
+        )
 
     def test_set_iat(self):
         now = make_utc(datetime(year=2000, month=1, day=1))
@@ -257,7 +280,9 @@ class TestToken(BaseTestCase):
         # Should allow overriding of time and claim name
         token.set_iat(claim="refresh_iat", at_time=now + timedelta(days=1))
         self.assertIn("refresh_iat", token)
-        self.assertEqual(token["refresh_iat"], datetime_to_epoch(now + timedelta(days=1)))
+        self.assertEqual(
+            token["refresh_iat"], datetime_to_epoch(now + timedelta(days=1))
+        )
 
     def test_check_exp(self):
         token = MyToken()
@@ -300,9 +325,13 @@ class TestToken(BaseTestCase):
 
         # Given claim and timestamp
         with self.assertRaises(TokenError):
-            token.check_exp("refresh_exp", current_time=current_time + timedelta(days=1))
+            token.check_exp(
+                "refresh_exp", current_time=current_time + timedelta(days=1)
+            )
         with self.assertRaises(TokenError):
-            token.check_exp("refresh_exp", current_time=current_time + timedelta(days=2))
+            token.check_exp(
+                "refresh_exp", current_time=current_time + timedelta(days=2)
+            )
 
     def test_check_token_not_expired_if_in_leeway(self):
         token = MyToken()
@@ -340,22 +369,24 @@ class TestToken(BaseTestCase):
         token.token_backend.leeway = 0
 
     def test_for_user(self):
-        username = "test_user"
-        user = User.create_user(username=username, password="test_password")
+        token = MyToken.for_user(self.user)
 
-        token = MyToken.for_user(user)
-
-        user_id = getattr(user, api_settings.USER_ID_FIELD)
+        user_id = getattr(self.user, api_settings.USER_ID_FIELD)
         if not isinstance(user_id, int):
             user_id = str(user_id)
 
         self.assertEqual(token[api_settings.USER_ID_CLAIM], user_id)
 
+    @override_api_settings(USER_ID_FIELD="username")
+    def test_for_user_with_username(self):
         # Test with non-int user id
-        with override_api_settings(USER_ID_FIELD="username"):
-            token = MyToken.for_user(user)
+        token = MyToken.for_user(self.user)
+        self.assertEqual(token[api_settings.USER_ID_CLAIM], self.username)
 
-        self.assertEqual(token[api_settings.USER_ID_CLAIM], username)
+    @override_api_settings(CHECK_REVOKE_TOKEN=True)
+    def test_revoke_token_claim_included_in_authorization_token(self):
+        token = MyToken.for_user(self.user)
+        self.assertIn(api_settings.REVOKE_TOKEN_CLAIM, token)
 
     def test_get_token_backend(self):
         token = MyToken()
@@ -370,7 +401,9 @@ class TestSlidingToken(BaseTestCase):
 
         self.assertEqual(
             token[api_settings.SLIDING_TOKEN_REFRESH_EXP_CLAIM],
-            datetime_to_epoch(token.current_time + api_settings.SLIDING_TOKEN_REFRESH_LIFETIME),
+            datetime_to_epoch(
+                token.current_time + api_settings.SLIDING_TOKEN_REFRESH_LIFETIME
+            ),
         )
         self.assertEqual(token[api_settings.TOKEN_TYPE_CLAIM], "sliding")
 

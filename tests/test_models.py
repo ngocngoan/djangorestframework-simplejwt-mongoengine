@@ -1,3 +1,6 @@
+from importlib import reload
+from unittest.mock import patch
+
 from rest_framework_simplejwt_mongoengine.models import TokenUser
 from rest_framework_simplejwt_mongoengine.settings import api_settings
 
@@ -14,6 +17,18 @@ class TestTokenUser(BaseTestCase):
         self.token["some_other_stuff"] = "arstarst"
 
         self.user = TokenUser(self.token)
+
+    def test_type_checking(self):
+        from rest_framework_simplejwt_mongoengine import models
+
+        with patch("typing.TYPE_CHECKING", True):
+            # Reload models, mock type checking
+            reload(models)
+
+            self.assertEqual(models.TYPE_CHECKING, True)
+
+        # Restore origin module without mock
+        reload(models)
 
     def test_username(self):
         self.assertEqual(self.user.username, "deep-thought")
@@ -60,6 +75,12 @@ class TestTokenUser(BaseTestCase):
         self.assertNotEqual(user1, user2)
         self.assertEqual(user1, user3)
 
+    def test_eq_not_implemented(self):
+        user1 = TokenUser({api_settings.USER_ID_CLAIM: 1})
+        user2 = "user2"
+
+        self.assertFalse(user1 == user2)
+
     def test_hash(self):
         self.assertEqual(hash(self.user), hash(self.user.id))
 
@@ -99,3 +120,6 @@ class TestTokenUser(BaseTestCase):
 
     def test_get_username(self):
         self.assertEqual(self.user.get_username(), "deep-thought")
+
+    def test_get_custom_claims_through_backup_getattr(self):
+        self.assertEqual(self.user.some_other_stuff, "arstarst")
