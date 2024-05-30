@@ -4,12 +4,13 @@ Settings
 ========
 
 Some of Simple JWT MongoEngine's behavior can be customized through settings variables in
-``settings.py``.
+``settings.py``:
 
 .. code-block:: python
 
-    # Django project settings.py
+  # Django project settings.py
 
+    from datetime import timedelta
     ...
 
     SIMPLE_JWT_MONGOENGINE = {
@@ -51,7 +52,6 @@ Some of Simple JWT MongoEngine's behavior can be customized through settings var
         "SLIDING_TOKEN_OBTAIN_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenObtainSlidingSerializer",
         "SLIDING_TOKEN_REFRESH_SERIALIZER": "rest_framework_simplejwt_mongoengine.serializers.TokenRefreshSlidingSerializer",
     }
-
 
 Above, the default values for these settings are shown.
 
@@ -191,7 +191,7 @@ collection will be used to build the "WWW-Authenticate" header in the response.
 The authorization header name to be used for authentication.
 The default is ``HTTP_AUTHORIZATION`` which will accept the
 ``Authorization`` header in the request. For example if you'd
-like to use ``X_Access_Token`` in the header of your requests
+like to use ``X-Access-Token`` in the header of your requests
 please specify the ``AUTH_HEADER_NAME`` to be
 ``HTTP_X_ACCESS_TOKEN`` in your settings.
 

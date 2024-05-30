@@ -8,19 +8,46 @@ Requirements
 
 * Python (3.8, 3.9, 3.10, 3.11)
 * Django (3.2, 4.1, 4.2)
-* Django REST Framework (3.11, 3.12, 3.13, 3.14, 3.15)
+* Django REST Framework (3.12, 3.13, 3.14, 3.15)
 * `Django MongoEngine`_ (0.5.4, 0.5.5, 0.5.6)
 
 .. _MongoEngine: https://mongoengine-odm.readthedocs.io
 .. _Django MongoEngine: https://github.com/MongoEngine/django-mongoengine
 
+These are the officially supported python and package versions.  Other versions
+will probably work.  You're free to modify the tox config and see what is
+possible.
 
 Installation
 ------------
 
-Simple JWT MongoEngine can be installed with pip::
+Simple JWT MongoEngine can be installed with pip:
+
+.. code-block:: console
 
   pip install djangorestframework-simplejwt-mongoengine
+
+
+Cryptographic Dependencies (Optional)
+-------------------------------------
+
+If you are planning on encoding or decoding tokens using certain digital
+signature algorithms (i.e. RSA and ECDSA; visit PyJWT for other algorithms), you will need to install the
+cryptography_ library. This can be installed explicitly, or as a required
+extra in the ``djangorestframework-simplejwt-mongoengine`` requirement:
+
+.. code-block:: console
+
+  pip install djangorestframework-simplejwt-mongoengine[crypto]
+
+The ``djangorestframework-simplejwt-mongoengine[crypto]`` format is recommended in requirements
+files in projects using ``Simple JWT Mongoengine``, as a separate ``cryptography`` requirement
+line may later be mistaken for an unused requirement and removed.
+
+.. _`cryptography`: https://cryptography.io
+
+Project Configuration
+---------------------
 
 Then, your django project must be configured to use the library.  In
 ``settings.py``, add
@@ -60,11 +87,9 @@ allow API users to verify HMAC-signed tokens without having access to your
 signing key:
 
 .. code-block:: python
-  # add `TokenVerifyView` to your import
 
   from rest_framework_simplejwt_mongoengine.views import TokenVerifyView
 
-  # and define it in your `urlpatterns`
   urlpatterns = [
       ...
       path('api/token/verify/', TokenVerifyView.as_view(), name='token_verify'),
