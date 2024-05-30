@@ -50,20 +50,20 @@ msgstr "Tipo de algoritmo no reconocido '{}'"
 msgid "You must have cryptography installed to use {}."
 msgstr ""
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr ""
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "El token es inválido o ha expirado"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr ""
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr ""
 "No se encontró una cuenta de usuario activa para las credenciales dadas"
@@ -76,50 +76,46 @@ msgstr ""
 "La configuración '{}' fue removida. Por favor, refiérase a '{}' para "
 "consultar las configuraciones disponibles."
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "usuario"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "creado en"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "expira en"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "Lista negra de Tokens"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "No es posible crear un token sin tipo o tiempo de vida"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "El token no tiene id"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "El token no tiene tipo"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "El token tiene un tipo incorrecto"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "El token no tiene el privilegio '{}'"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "El privilegio '{}' del token ha expirado"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "El token está en la lista negra"
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "usuario"
+
+#~ msgid "created at"
+#~ msgstr "creado en"
+
+#~ msgid "expires at"
+#~ msgstr "expira en"

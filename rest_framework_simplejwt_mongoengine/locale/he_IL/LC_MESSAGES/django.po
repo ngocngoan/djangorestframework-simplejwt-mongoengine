@@ -48,20 +48,20 @@ msgstr "סוג אלגוריתם לא מזוהה '{}'"
 msgid "You must have cryptography installed to use {}."
 msgstr "עליך להתקין קריפטוגרפיה כדי להשתמש ב-{}."
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr "סוג לא מזוהה '{}', 'leeway' חייב להיות מסוג int, float או timedelta."
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "המזהה אינו חוקי או שפג תוקפו"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr "צוין אלגוריתם לא חוקי"
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr "לא נמצא חשבון עם פרטי זיהוי אלו"
 
@@ -71,50 +71,46 @@ msgid ""
 "settings."
 msgstr "ההגדרה '{}' הוסרה. בבקשה קראו כאן: '{}' בשביל לראות הגדרות אפשרויות"
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "משתמש"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "נוצר בשעה"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "פג תוקף בשעה"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "רשימה שחורה של מזהים"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "לא ניתן ליצור מזהה ללא סוג או אורך חיים"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "למזהה אין מספר זיהוי"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "למזהה אין סוג"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "למזהה יש סוג לא נכון"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "למזהה אין '{}'"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "מזהה '{}' פג תוקף"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "המזהה ברשימה השחורה."
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "משתמש"
+
+#~ msgid "created at"
+#~ msgstr "נוצר בשעה"
+
+#~ msgid "expires at"
+#~ msgstr "פג תוקף בשעה"

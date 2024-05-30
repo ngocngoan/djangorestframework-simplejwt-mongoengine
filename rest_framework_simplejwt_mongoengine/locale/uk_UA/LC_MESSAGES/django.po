@@ -47,20 +47,20 @@ msgstr "Тип алгоритму '{}' не розпізнаний"
 msgid "You must have cryptography installed to use {}."
 msgstr "Встановіть модуль cryptography щоб використовувати {}"
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr ""
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "Токен некоректний або термін його дії вичерпаний"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr "Вказаний невірний алгоритм"
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr "Не знайдено жодного облікового запису по наданих облікових даних"
 
@@ -70,50 +70,46 @@ msgid ""
 "settings."
 msgstr "Налаштування '{}' видалене. Подивіться у '{}' для інших доступних"
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "користувач"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "створений о"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "дійстний по"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "Чорний список токенів"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "Неможливо створити токен без типу або строку дії"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "У ключі доступу не міститься id"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "У ключі доступу не міститься тип"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "токен позначений невірним типом"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "У токені не міститься '{}' заголовку"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "Заголовок '{}' токена не дійсний"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "Токен занесений у чорний список"
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "користувач"
+
+#~ msgid "created at"
+#~ msgstr "створений о"
+
+#~ msgid "expires at"
+#~ msgstr "дійстний по"

@@ -45,21 +45,21 @@ msgstr "نوع الخوارزمية غير معروف '{}'"
 msgid "You must have cryptography installed to use {}."
 msgstr "يجب أن يكون لديك تشفير مثبت لاستخدام {}."
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr ""
 "نوع غير معروف '{}'. يجب أن تكون 'leeway' عددًا صحيحًا أو عددًا نسبيًا أو فرق وقت."
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "تأشيرة المرور غير صالحة أو منتهية الصلاحية"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr "تم تحديد خوارزمية غير صالحة"
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr "لم يتم العثور على حساب نشط للبيانات المقدمة"
 
@@ -70,50 +70,46 @@ msgid ""
 msgstr ""
 "تمت إزالة الإعداد '{}'. يرجى الرجوع إلى '{}' للتعرف على الإعدادات المتاحة."
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "المستخدم"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "أنشئت في"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "تنتهي في"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "قائمة تأشيرات المرور السوداء"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "لا يمكن إنشاء تأشيرة مرور بدون نوع أو عمر"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "التأشيرة ليس لها معرف"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "التأشيرة ليس لها نوع"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "التأشيرة لها نوع خاطئ"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "التأشيرة ليس لديها مطالبة '{}'"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "انتهى عمر المطالبة بالتأشيرة '{}'"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "التأشيرة مدرجة في القائمة السوداء"
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "المستخدم"
+
+#~ msgid "created at"
+#~ msgstr "أنشئت في"
+
+#~ msgid "expires at"
+#~ msgstr "تنتهي في"

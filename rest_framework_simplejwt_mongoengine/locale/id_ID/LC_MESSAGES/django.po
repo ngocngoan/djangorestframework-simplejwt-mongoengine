@@ -48,21 +48,21 @@ msgstr "Jenis algoritma tidak dikenal '{}'"
 msgid "You must have cryptography installed to use {}."
 msgstr "Anda harus memasang cryptography untuk menggunakan {}."
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr ""
 "Tipe '{}' tidak dikenali, 'leeway' harus bertipe int, float, atau timedelta."
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "Token tidak valid atau kedaluwarsa"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr "Algoritma yang ditentukan tidak valid"
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr "Tidak ada akun aktif yang ditemukan dengan kredensial yang diberikan"
 
@@ -74,50 +74,46 @@ msgstr ""
 "Setelan '{}' telah dihapus. Silakan merujuk ke '{}' untuk pengaturan yang "
 "tersedia."
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "pengguna"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "created at"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "kedaluwarsa pada"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "Daftar Hitam Token"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "Tidak dapat membuat token tanpa tipe atau masa pakai"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "Token tidak memiliki id"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "Token tidak memiliki tipe"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "Jenis token salah"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "Token tidak memiliki klaim '{}'"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "Klaim token '{}' telah kedaluwarsa"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "Token masuk daftar hitam"
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "pengguna"
+
+#~ msgid "created at"
+#~ msgstr "created at"
+
+#~ msgid "expires at"
+#~ msgstr "kedaluwarsa pada"

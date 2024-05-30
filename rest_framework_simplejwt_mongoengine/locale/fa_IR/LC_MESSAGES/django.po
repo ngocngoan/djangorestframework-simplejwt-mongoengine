@@ -43,20 +43,20 @@ msgstr "نوع الگوریتم ناشناخته '{}'"
 msgid "You must have cryptography installed to use {}."
 msgstr "برای استفاده از {} باید رمزنگاری را نصب کرده باشید."
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr "نوع ناشناخته '{}'، 'leeway' باید از نوع int، float یا timedelta باشد."
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "توکن نامعتبر است یا منقضی شده است"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr "الگوریتم نامعتبر مشخص شده است"
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr "هیچ اکانت فعالی برای اطلاعات داده شده یافت نشد"
 
@@ -66,50 +66,46 @@ msgid ""
 "settings."
 msgstr "تنظیمات '{}' حذف شده است. لطفا به '{}' برای تنظیمات موجود مراجعه کنید."
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "کاربر"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "زمان ایجاد"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "زمان انقضا"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "لیست سیاه توکن"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "توکن بدون هیچ نوع و طول عمر قابل ساخت نیست"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "توکن id ندارد"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "توکن نوع ندارد"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "توکن نوع اشتباهی دارد"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "توکن دارای '{}' claim نمی‌باشد"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "'{}' claim توکن منقضی شده"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "توکن به لیست سیاه رفته است"
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "کاربر"
+
+#~ msgid "created at"
+#~ msgstr "زمان ایجاد"
+
+#~ msgid "expires at"
+#~ msgstr "زمان انقضا"

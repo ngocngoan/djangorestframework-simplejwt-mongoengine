@@ -48,20 +48,20 @@ msgstr "Algoritmo di tipo '{}' non riconosciuto"
 msgid "You must have cryptography installed to use {}."
 msgstr "Devi avere installato cryptography per usare '{}'."
 
-#: backends.py:90
+#: backends.py:92
 msgid ""
 "Unrecognized type '{}', 'leeway' must be of type int, float or timedelta."
 msgstr ""
 
-#: backends.py:104 backends.py:154 exceptions.py:47 tokens.py:58
+#: backends.py:106 backends.py:156 exceptions.py:47 tokens.py:61
 msgid "Token is invalid or expired"
 msgstr "Il token non è valido o è scaduto"
 
-#: backends.py:152
+#: backends.py:154
 msgid "Invalid algorithm specified"
 msgstr "L'algoritmo specificato non è valido"
 
-#: serializers.py:35
+#: serializers.py:37
 msgid "No active account found with the given credentials"
 msgstr "Nessun account attivo trovato con queste credenziali"
 
@@ -73,50 +73,46 @@ msgstr ""
 "L'impostazione '{}' è stata rimossa. Per favore utilizza '{}' per "
 "visualizzare le impostazioni valide."
 
-#: token_blacklist/admin.py:79
-msgid "jti"
-msgstr "jti"
-
-#: token_blacklist/admin.py:85
-msgid "user"
-msgstr "utente"
-
-#: token_blacklist/admin.py:91
-msgid "created at"
-msgstr "creato il"
-
-#: token_blacklist/admin.py:97
-msgid "expires at"
-msgstr "scade il"
-
 #: token_blacklist/apps.py:7
 msgid "Token Blacklist"
 msgstr "Blacklist dei token"
 
-#: tokens.py:44
+#: tokens.py:47
 msgid "Cannot create token with no type or lifetime"
 msgstr "Impossibile creare un token senza tipo o durata"
 
-#: tokens.py:116
+#: tokens.py:119
 msgid "Token has no id"
 msgstr "Il token non ha un id"
 
-#: tokens.py:128
+#: tokens.py:131
 msgid "Token has no type"
 msgstr "Il token non ha un tipo"
 
-#: tokens.py:131
+#: tokens.py:134
 msgid "Token has wrong type"
 msgstr "Il token ha un tipo sbagliato"
 
-#: tokens.py:190
+#: tokens.py:193
 msgid "Token has no '{}' claim"
 msgstr "Il token non contiene il parametro '{}'"
 
-#: tokens.py:195
+#: tokens.py:198
 msgid "Token '{}' claim has expired"
 msgstr "Il parametro '{}' del token è scaduto"
 
-#: tokens.py:257
+#: tokens.py:260
 msgid "Token is blacklisted"
 msgstr "Il token è stato inserito nella blacklist"
+
+#~ msgid "jti"
+#~ msgstr "jti"
+
+#~ msgid "user"
+#~ msgstr "utente"
+
+#~ msgid "created at"
+#~ msgstr "creato il"
+
+#~ msgid "expires at"
+#~ msgstr "scade il"
