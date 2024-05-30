@@ -1,0 +1,4 @@
+[run]
+omit =
+        rest_framework_simplejwt_mongoengine/token_blacklist/admin.py
+        rest_framework_simplejwt_mongoengine/token_blacklist/apps.py
