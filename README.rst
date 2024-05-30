@@ -1,32 +1,33 @@
-|PyPI version| |Build Status| |Docs badge| |Code Style| |Pyup| |License|
+|PyPI Version| |Python Version| |Django Version| |GitHub Actions| |Code Style| |License|
 
 ======================
 Simple JWT MongoEngine
 ======================
 
 
-.. |PyPI version| image:: https://img.shields.io/pypi/v/djangorestframework-simplejwt-mongoengine.svg
-        :target: https://pypi.python.org/pypi/djangorestframework-simplejwt-mongoengine
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/djangorestframework-simplejwt-mongoengine
+   :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine
+   :alt: PyPI - Version
 
-.. |Build Status| image:: https://img.shields.io/travis/ngocngoan/djangorestframework-simplejwt-mongoengine.svg
-        :target: https://travis-ci.com/ngocngoan/djangorestframework-simplejwt-mongoengine
+.. |Python Version| image:: https://img.shields.io/pypi/pyversions/djangorestframework-simplejwt-mongoengine
+   :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine/blob/main/LICENSE
+   :alt: Python Version
 
-.. |Docs badge| image:: https://readthedocs.org/projects/djangorestframework-simplejwt-mongoengine/badge/?version=latest
-        :target: https://djangorestframework-simplejwt-mongoengine.readthedocs.io/en/latest/
-        :alt: Documentation Status
+.. |Django Version| image:: https://img.shields.io/pypi/frameworkversions/django/djangorestframework-simplejwt-mongoengine
+   :target: https://github.com/django
+   :alt: Django Version
+
+.. |GitHub Actions| image:: https://img.shields.io/github/actions/workflow/status/ngocngoan/djangorestframework-simplejwt-mongoengine/test.yaml
+   :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine/actions
+   :alt: GitHub Actions Workflow Status
 
 .. |Code Style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
-    :target: https://github.com/ambv/black
+   :target: https://github.com/psf/black
+   :alt: Black Format
 
-
-.. |Pyup| image:: https://pyup.io/repos/github/ngocngoan/djangorestframework-simplejwt-mongoengine/shield.svg
-     :target: https://pyup.io/repos/github/ngocngoan/djangorestframework-simplejwt-mongoengine/
-     :alt: Updates
-
-.. |License| image:: https://img.shields.io/badge/license-GPL%20v3.0-brightgreen.svg
-    :target: COPYING
-    :alt: Repository License
-
+.. |License| image:: https://img.shields.io/github/license/ngocngoan/djangorestframework-simplejwt-mongoengine
+   :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine/blob/main/LICENSE
+   :alt: Repository License
 
 
 Simple JWT MongoEngine is a JSON Web Token authentication plugin for the `Django REST Framework`_

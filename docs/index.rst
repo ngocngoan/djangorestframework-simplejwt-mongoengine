@@ -1,23 +1,31 @@
+|PyPI Version| |Python Version| |Django Version| |GitHub Actions| |Code Style| |License|
+
 Welcome to Simple JWT MongoEngine's documentation!
 ==================================================
 
-.. image:: https://img.shields.io/pypi/v/djangorestframework-simplejwt-mongoengine
+.. |PyPI Version| image:: https://img.shields.io/pypi/v/djangorestframework-simplejwt-mongoengine
    :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine
    :alt: PyPI - Version
 
-.. image:: https://img.shields.io/github/license/ngocngoan/djangorestframework-simplejwt-mongoengine
+.. |Python Version| image:: https://img.shields.io/pypi/pyversions/djangorestframework-simplejwt-mongoengine
    :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine/blob/main/LICENSE
-   :alt: GitHub License
+   :alt: Python Version
 
-.. image:: https://img.shields.io/github/actions/workflow/status/ngocngoan/djangorestframework-simplejwt-mongoengine/test.yaml
+.. |Django Version| image:: https://img.shields.io/pypi/frameworkversions/django/djangorestframework-simplejwt-mongoengine
+   :target: https://github.com/django
+   :alt: Django Version
+
+.. |GitHub Actions| image:: https://img.shields.io/github/actions/workflow/status/ngocngoan/djangorestframework-simplejwt-mongoengine/test.yaml
    :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine/actions
    :alt: GitHub Actions Workflow Status
 
-.. image:: https://img.shields.io/pypi/pyversions/djangorestframework-simplejwt-mongoengine
-   :alt: PyPI - Python Version
+.. |Code Style| image:: https://img.shields.io/badge/code%20style-black-000000.svg
+   :target: https://github.com/psf/black
+   :alt: Black Format
 
-.. image:: https://img.shields.io/pypi/frameworkversions/django/djangorestframework-simplejwt-mongoengine
-   :alt: PyPI - Versions from Framework Classifiers
+.. |License| image:: https://img.shields.io/github/license/ngocngoan/djangorestframework-simplejwt-mongoengine
+   :target: https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine/blob/main/LICENSE
+   :alt: Repository License
 
 
 A JSON Web Token authentication plugin for the `Django REST Framework
