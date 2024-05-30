@@ -6,17 +6,15 @@ env:
   COMPOSE_DOCKER_CLI_BUILD: 1
 
 on:
-  pull_request:
-    branches: [ "master", "main" ]
-    paths-ignore: [ "docs/**" ]
-
   push:
-    branches: [ "master", "main" ]
-    paths-ignore: [ "docs/**" ]
-
+    branches:
+      - main
+      - master
+  pull_request:
 
 jobs:
-  pytest:
+  build:
+    name: build (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }}, DRF ${{ matrix.drf-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -55,12 +53,12 @@ jobs:
       - name: Get pip cache dir
         id: pip-cache
         run: |
-          echo "CACHE_DIR=$(pip cache dir)" >> $GITHUB_OUTPUT
+          echo "::set-output name=dir::$(pip cache dir)"
 
       - name: Cache
         uses: actions/cache@v4
         with:
-          path: ${{ steps.pip-cache.outputs.CACHE_DIR }}
+          path: ${{ steps.pip-cache.outputs.dir }}
           key:
             ${{ matrix.python-version }}-v1-${{ hashFiles('**/setup.py') }}
           restore-keys: |
@@ -72,11 +70,17 @@ jobs:
           python -m pip install --upgrade tox tox-gh-actions
 
       - name: Tox tests
-        run: tox -v
+        run: |
+          tox -v
         env:
           DJANGO: ${{ matrix.django-version }}
           DRF: ${{ matrix.drf-version }}
-        #   ME: ${{ matrix.mongoengine-version }}
+          # ME: ${{ matrix.mongoengine-version }}
           DJME: ${{ matrix.django-mongoengine-version }}
           DRFSIMPLEJWT: ${{ matrix.drf-simplejwt-version }}
           PYJWT: ${{ matrix.pyjwt-version }}
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v1
+        with:
+          name: Python ${{ matrix.python-version }}
