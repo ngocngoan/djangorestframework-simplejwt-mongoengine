@@ -39,6 +39,22 @@ def django_configure():
             "rest_framework_simplejwt_mongoengine",
             "rest_framework_simplejwt_mongoengine.token_blacklist",
         ),
+        MONGODB_DATABASES={
+            "default": {
+                "host": "your_ip_or_domain",
+                "port": 27017,
+                "name": "your_db_name",
+                "username": "your_db_user",
+                "password": "your_password",
+                "tz_aware": True,
+                "authentication_mechanism": "SCRAM-SHA-1",
+                "authentication_source": "authen_source",
+                "uuidrepresentation": "standard",
+                "readpreference": "primary",
+                "ssl": False,
+                "tls": False,
+            }
+        }
     )
 
     try:
