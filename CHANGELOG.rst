@@ -3,6 +3,20 @@ Changelog
 =========
 
 
+1.3.0 (2024-05-30)
+------------------
+
+* Python (3.8, 3.9, 3.10, 3.11)
+* Django (3.2, 4.1, 4.2)
+* Django REST Framework (3.12, 3.13, 3.14, 3.15)
+* `Django MongoEngine`_ (0.5.4, 0.5.5, 0.5.6)
+
+* Add support Django 4.1 and 4.2
+* Add support Django REST Framework 3.15
+* update features that includes `Simple JWT`_ 5.3.x
+* Drop `Simple JWT`_ as dependency
+
+
 1.2.1 (2023-01-18)
 ------------------
 
