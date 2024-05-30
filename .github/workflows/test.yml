@@ -13,8 +13,8 @@ on:
   pull_request:
 
 jobs:
-  build:
-    name: build (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }}, DRF ${{ matrix.drf-version }})
+  pytest:
+    name: Test on (Python ${{ matrix.python-version }}, Django ${{ matrix.django-version }}, DRF ${{ matrix.drf-version }})
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -81,6 +81,6 @@ jobs:
           PYJWT: ${{ matrix.pyjwt-version }}
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v1
+        uses: codecov/codecov-action@v4
         with:
           name: Python ${{ matrix.python-version }}
