@@ -94,5 +94,5 @@ setup(
     ),
     test_suite="tests",
     url="https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine",
-    version="1.2.1",
+    version="1.3.0",
 )
