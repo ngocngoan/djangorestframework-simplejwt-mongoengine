@@ -1,7 +1,4 @@
 #!/usr/bin/env python
-
-"""The setup script."""
-
 from pathlib import Path
 
 from setuptools import find_packages, setup
@@ -44,6 +41,9 @@ extras_require = {
     "python-jose": [
         "python-jose==3.3.0",
     ],
+    "crypto": [
+        "cryptography>=3.3.1",
+    ],
 }
 
 extras_require["dev"] = (
@@ -54,7 +54,10 @@ extras_require["dev"] = (
     + extras_require["python-jose"]
 )
 
+
 setup(
+    name="djangorestframework_simplejwt_mongoengine",
+    keywords="djangorestframework_simplejwt_mongoengine",
     author="Đỗ Ngọc Ngoạn (aka Ngoan Do)",
     author_email="ngocngoan060288@gmail.com",
     python_requires=">=3.8",
@@ -83,8 +86,6 @@ setup(
     license="GNU General Public License v3",
     include_package_data=True,
     zip_safe=False,
-    keywords="djangorestframework_simplejwt_mongoengine",
-    name="djangorestframework_simplejwt_mongoengine",
     packages=find_packages(
         include=[
             "rest_framework_simplejwt_mongoengine",
