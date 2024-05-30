@@ -7,7 +7,7 @@ Submodules
 rest\_framework\_simplejwt\_mongoengine.authentication module
 ------------------------------------------------
 
-.. automodule:: rest_framework_simplejwt.authentication
+.. automodule:: rest_framework_simplejwt_mongoengine.authentication
     :members:
     :undoc-members:
     :show-inheritance:
@@ -15,7 +15,7 @@ rest\_framework\_simplejwt\_mongoengine.authentication module
 rest\_framework\_simplejwt\_mongoengine.models module
 ----------------------------------------
 
-.. automodule:: rest_framework_simplejwt.models
+.. automodule:: rest_framework_simplejwt_mongoengine.models
     :members:
     :undoc-members:
     :show-inheritance:
@@ -23,7 +23,7 @@ rest\_framework\_simplejwt\_mongoengine.models module
 rest\_framework\_simplejwt\_mongoengine.serializers module
 ---------------------------------------------
 
-.. automodule:: rest_framework_simplejwt.serializers
+.. automodule:: rest_framework_simplejwt_mongoengine.serializers
     :members:
     :undoc-members:
     :show-inheritance:
@@ -31,7 +31,7 @@ rest\_framework\_simplejwt\_mongoengine.serializers module
 rest\_framework\_simplejwt\_mongoengine.tokens module
 ----------------------------------------
 
-.. automodule:: rest_framework_simplejwt.tokens
+.. automodule:: rest_framework_simplejwt_mongoengine.tokens
     :members:
     :undoc-members:
     :show-inheritance:
@@ -39,7 +39,7 @@ rest\_framework\_simplejwt\_mongoengine.tokens module
 rest\_framework\_simplejwt\_mongoengine.utils module
 ---------------------------------------
 
-.. automodule:: rest_framework_simplejwt.utils
+.. automodule:: rest_framework_simplejwt_mongoengine.utils
     :members:
     :undoc-members:
     :show-inheritance:
@@ -47,7 +47,7 @@ rest\_framework\_simplejwt\_mongoengine.utils module
 rest\_framework\_simplejwt\_mongoengine.views module
 ---------------------------------------
 
-.. automodule:: rest_framework_simplejwt.views
+.. automodule:: rest_framework_simplejwt_mongoengine.views
     :members:
     :undoc-members:
     :show-inheritance:
