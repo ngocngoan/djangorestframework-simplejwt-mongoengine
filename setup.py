@@ -57,6 +57,10 @@ extras_require["dev"] = (
 
 setup(
     name="djangorestframework_simplejwt_mongoengine",
+    use_scm_version={"version_scheme": "post-release"},
+    setup_requires=["setuptools_scm"],
+    url="https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine",
+    license="GNU General Public License v3",
     keywords="djangorestframework_simplejwt_mongoengine",
     author="Đỗ Ngọc Ngoạn (aka Ngoan Do)",
     author_email="ngocngoan060288@gmail.com",
@@ -83,7 +87,6 @@ setup(
     long_description=Path("README.rst").read_text(encoding="utf-8"),
     install_requires=requirements,
     extras_require=extras_require,
-    license="GNU General Public License v3",
     include_package_data=True,
     zip_safe=False,
     packages=find_packages(
@@ -93,6 +96,4 @@ setup(
         ]
     ),
     test_suite="tests",
-    url="https://github.com/ngocngoan/djangorestframework-simplejwt-mongoengine",
-    version="1.3.0",
 )
