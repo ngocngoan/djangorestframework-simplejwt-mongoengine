@@ -94,8 +94,8 @@ devhelp:
 	@echo
 	@echo "Build finished."
 	@echo "To view the help file:"
-	@echo "# mkdir -p $$HOME/.local/share/devhelp/rest_framework_simplejwt"
-	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/rest_framework_simplejwt"
+	@echo "# mkdir -p $$HOME/.local/share/devhelp/rest_framework_simplejwt_mongoengine"
+	@echo "# ln -s $(BUILDDIR)/devhelp $$HOME/.local/share/devhelp/rest_framework_simplejwt_mongoengine"
 	@echo "# devhelp"
 
 epub:

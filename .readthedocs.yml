@@ -8,8 +8,8 @@ build:
 
 python:
   install:
-    # Install dependencies from setup.py .
-    - method: pip
+  # Install dependencies from setup.py .
+    - method: setuptools
       path: .
       extra_requirements:
         - doc
