@@ -81,6 +81,6 @@ jobs:
           PYJWT: ${{ matrix.pyjwt-version }}
 
       - name: Upload coverage
-        uses: codecov/codecov-action@v4
+        uses: codecov/codecov-action@v3
         with:
           name: Python ${{ matrix.python-version }}
