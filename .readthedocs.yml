@@ -9,7 +9,7 @@ build:
 python:
   install:
   # Install dependencies from setup.py .
-    - method: setuptools
+    - method: pip
       path: .
       extra_requirements:
         - doc
